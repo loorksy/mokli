@@ -1,8 +1,8 @@
 """Spoken turn-taking. Listening, thinking, and speaking are explicit states.
 
 This is the self-hosted path. It does not call a vendor realtime socket.
-The browser supplies recognition and speech when those APIs exist. Tests
-drive the same session with text.
+A turn opens on start, speaks a reply, and returns to idle when the
+reply finishes. Listening is not sticky.
 """
 
 from __future__ import annotations
@@ -82,17 +82,11 @@ class VoiceSession:
             return self.turn
         if self.turn.state != "speaking":
             raise RuntimeError(f"nothing is speaking ({self.turn.state})")
-        self.turn = VoiceTurn(
-            state="listening",
-            transcript=self.turn.transcript,
-            reply=self.turn.reply,
-            provider=self.turn.provider,
-            model=self.turn.model,
-            runtime=self.turn.runtime,
-            agent=self.turn.agent,
-            status=self.turn.status,
-            tools=list(self.turn.tools),
-        )
+        self.turn = VoiceTurn(state="idle")
+        return self.turn
+
+    def stop(self) -> VoiceTurn:
+        self.turn = VoiceTurn(state="idle")
         return self.turn
 
     def barge_in(self) -> VoiceTurn:

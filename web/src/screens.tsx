@@ -1,4 +1,4 @@
-import { CandlestickSeries, ColorType, createChart, type CandlestickData, type IChartApi, type ISeriesApi } from "lightweight-charts";
+import { CandlestickSeries, ColorType, createChart, type CandlestickData, type IChartApi, type ISeriesApi, type Time } from "lightweight-charts";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "./api";
@@ -35,71 +35,54 @@ type Dash = {
   book?: Book;
 };
 
-function Card({ title, value }: { title: string; value: string }) {
-  return (
-    <div className="card p-4">
-      <div className="text-xs text-[var(--muted)]">{title}</div>
-      <div className="mt-1 whitespace-pre-line break-words text-lg leading-snug">{value}</div>
-    </div>
-  );
-}
-
 export function Dashboard() {
   const { t } = useTranslation();
   const [data, setData] = useState<Dash | null>(null);
-  const [note, setNote] = useState("");
   async function load() {
     setData(await api<Dash>("/api/dashboard"));
   }
   useEffect(() => { void load(); }, []);
   const book = data?.book;
   const open = (data?.broker.positions || []).filter((item) => item.status === "open");
+  const priced = book?.bid != null && book?.ask != null;
+  const mid = priced && book.bid != null && book.ask != null ? ((book.bid + book.ask) / 2).toFixed(2) : "—";
+  const spread = book?.spread_points == null ? "—" : String(book.spread_points);
+  let next = t("desk.nextLoad");
+  if (data?.broker.killed) next = t("desk.nextKilled");
+  else if (open.length > 0) next = t("desk.nextPosition");
+  else if (priced) next = t("desk.nextCycle");
   return (
     <section className="mx-auto w-full max-w-3xl space-y-4">
-      <h1 className="screen-title">{t("nav.dashboard")}</h1>
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <button className="quiet" onClick={async () => { await api("/api/market/replay/synthetic", { method: "POST" }); setNote("SIMULATOR"); await load(); }}>{t("loadReplay")}</button>
-        <button className="quiet" onClick={async () => { try { await api("/api/market/replay/arm?start=40", { method: "POST" }); setNote("SIMULATOR"); } catch { setNote("UNAVAILABLE"); } await load(); }}>{t("arm")}</button>
-        <button className="quiet" onClick={async () => { try { await api("/api/market/replay/step", { method: "POST" }); } catch { setNote("UNAVAILABLE"); } await load(); }}>{t("step")}</button>
+      <header>
+        <p className="text-sm text-[var(--muted)]"><span className="latin">XAUUSD</span></p>
+        <p className="desk-price latin" dir="ltr">{mid}</p>
+      </header>
+      <article className="card space-y-2 p-4">
+        <p>{t("desk.bidAsk", { bid: book?.bid == null ? "—" : book.bid.toFixed(2), ask: book?.ask == null ? "—" : book.ask.toFixed(2) })}</p>
+        <p>{t("desk.spreadLine", { points: spread })}</p>
+        {data && <p className="text-sm text-[var(--muted)]">{t("desk.balanceLine", { balance: data.broker.balance.toFixed(2) })}</p>}
+      </article>
+      <article className="card space-y-2 p-4">
+        <h2 className="text-sm text-[var(--muted)]">{t("desk.position")}</h2>
+        {open.length === 0 ? <p>{t("desk.flat")}</p> : open.map((item) => (
+          <p key={item.id}>
+            {t("desk.positionLine", {
+              side: item.side === "buy" ? t("desk.buy") : t("desk.sell"),
+              lots: item.remaining,
+              entry: item.entry,
+            })}
+          </p>
+        ))}
+      </article>
+      <article className="card space-y-2 p-4">
+        <h2 className="text-sm text-[var(--muted)]">{t("desk.next")}</h2>
+        <p>{next}</p>
+      </article>
+      <div className="flex flex-wrap items-center gap-2">
+        <button className="quiet" onClick={async () => { await api("/api/market/replay/synthetic", { method: "POST" }); await load(); }}>{t("loadReplay")}</button>
+        <button className="quiet" onClick={async () => { try { await api("/api/market/replay/step", { method: "POST" }); } catch { /* no tape yet */ } await load(); }}>{t("step")}</button>
         <button className="quiet" onClick={async () => { await api("/api/cycle", { method: "POST" }); await load(); }}>{t("runCycle")}</button>
         <button className="quiet danger" onClick={async () => { await api("/api/broker/kill", { method: "POST" }); await load(); }}>{t("kill")}</button>
-      </div>
-      {note && <p className="mb-3 text-sm text-[var(--gold)]">{note}</p>}
-      {book && (
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <Card title={t("bid")} value={book.bid == null ? "—" : book.bid.toFixed(2)} />
-          <Card title={t("ask")} value={book.ask == null ? "—" : book.ask.toFixed(2)} />
-          <Card title={t("spread")} value={book.spread_points == null ? "—" : String(book.spread_points)} />
-          <Card title={t("market")} value={book.index >= 0 ? `${book.state}\n${book.index + 1}/${book.total}` : book.state} />
-        </div>
-      )}
-      {!data ? <p>{t("empty")}</p> : (
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <Card title={t("balance")} value={String(data.broker.balance)} />
-          <Card title={t("equity")} value={String(data.broker.equity)} />
-          <Card title={t("market")} value={data.market_state} />
-          <Card title={t("mode")} value={data.mode === "paper" ? t("paper") : t("live")} />
-          <Card title={t("agent")} value={data.agent} />
-          <Card title={t("provider")} value={data.provider} />
-          <Card title={t("model")} value={data.model} />
-          <Card title={t("runtime")} value={data.runtime} />
-          <Card title={t("status")} value={data.status} />
-          <Card title={t("tools")} value={data.tools.length ? data.tools.join(", ") : "—"} />
-          <Card title={t("freshness")} value={data.freshness ? data.freshness.slice(0, 16).replace("T", " ") : data.source} />
-        </div>
-      )}
-      <div>
-        <h2 className="mb-2 text-sm text-[var(--muted)]">{t("positions")}</h2>
-        {open.length === 0 ? <p className="text-sm text-[var(--muted)]">{t("empty")}</p> : (
-          <div className="space-y-2">
-            {open.map((item) => (
-              <article key={item.id} className="flex items-center justify-between rounded-[var(--radius)] border border-[var(--line)] bg-[var(--card)] px-3 py-2 text-sm">
-                <span className={item.side === "buy" ? "text-[var(--buy)]" : "text-[var(--sell)]"}>{item.side}</span>
-                <span>{item.remaining} @ {item.entry}</span>
-              </article>
-            ))}
-          </div>
-        )}
       </div>
       <Notifications />
     </section>
@@ -129,13 +112,24 @@ export function Chat({ openAttach, includeMarket, includeNews }: { openAttach: (
     };
     const onNew = () => { setLines([]); setText(""); };
     const onProfile = () => setName(displayName());
+    const onVoice = (event: Event) => {
+      const detail = (event as CustomEvent<{ transcript: string; reply: string }>).detail;
+      if (!detail?.transcript) return;
+      setLines((current) => [
+        ...current,
+        { role: "user", body: detail.transcript },
+        { role: "mokli", body: detail.reply },
+      ]);
+    };
     window.addEventListener("mokli-draft", onDraft);
     window.addEventListener("mokli-new-chat", onNew);
     window.addEventListener("mokli-profile", onProfile);
+    window.addEventListener("mokli-voice-line", onVoice);
     return () => {
       window.removeEventListener("mokli-draft", onDraft);
       window.removeEventListener("mokli-new-chat", onNew);
       window.removeEventListener("mokli-profile", onProfile);
+      window.removeEventListener("mokli-voice-line", onVoice);
     };
   }, []);
   const day = new Date().getDay();
@@ -143,7 +137,7 @@ export function Chat({ openAttach, includeMarket, includeNews }: { openAttach: (
     ? ["أحد سعيد", "اثنين سعيد", "ثلاثاء سعيد", "أربعاء سعيد", "خميس سعيد", "جمعة سعيدة", "سبت سعيد"][day]
     : ["Happy Sunday", "Happy Monday", "Happy Tuesday", "Happy Wednesday", "Happy Thursday", "Happy Friday", "Happy Saturday"][day];
   return (
-    <section className="chat-stage">
+    <section className="chat-stage" data-voice-state={voice.state}>
       <div className="chat-log">
       <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4">
         {lines.length === 0 ? (
@@ -169,11 +163,8 @@ export function Chat({ openAttach, includeMarket, includeNews }: { openAttach: (
         ))}
       </div>
       </div>
-      {(voice.state !== "idle" || !voice.local) && (
-        <p className="px-4 text-center text-sm text-[var(--muted)]">
-          {!voice.local ? t("voiceLocal") : t(`voiceState.${voice.state}`)}
-          {voice.snap?.reply ? ` · ${voice.snap.reply}` : ""}
-        </p>
+      {(voice.state === "listening" || voice.state === "thinking" || voice.state === "speaking") && (
+        <p className="px-4 text-center text-sm text-[var(--muted)]">{t(`voiceState.${voice.state}`)}</p>
       )}
       <form className="composer" onSubmit={async (event) => {
         event.preventDefault();
@@ -246,21 +237,62 @@ export function Debate() {
   );
 }
 
+type AxisTick = { label: string; x: number };
+
+function candleStamp(time: Time | number): string {
+  const unix = typeof time === "number" ? time : typeof time === "string" ? Math.floor(Date.parse(time) / 1000) : Math.floor(Date.UTC(time.year, time.month - 1, time.day) / 1000);
+  const date = new Date(unix * 1000);
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hour = String(date.getUTCHours()).padStart(2, "0");
+  const minute = String(date.getUTCMinutes()).padStart(2, "0");
+  return `${month}-${day} ${hour}:${minute}`;
+}
+
 export function ChartPage() {
   const ref = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
+  const [ticks, setTicks] = useState<AxisTick[]>([]);
   useEffect(() => {
     if (!ref.current) return;
     let chart: IChartApi | null = null;
     let series: ISeriesApi<"Candlestick"> | null = null;
     let dead = false;
+    const paint = (apiChart: IChartApi, rows: CandlestickData[]) => {
+      const step = Math.max(1, Math.floor((rows.length - 1) / 5));
+      const indexes = new Set<number>([0, rows.length - 1]);
+      for (let index = 0; index < rows.length; index += step) indexes.add(index);
+      const next: AxisTick[] = [];
+      for (const index of [...indexes].sort((left, right) => left - right)) {
+        const row = rows[index];
+        if (!row) continue;
+        const x = apiChart.timeScale().timeToCoordinate(row.time);
+        const label = candleStamp(row.time as Time);
+        if (x == null || next.some((item) => item.label === label)) continue;
+        const previous = next[next.length - 1];
+        if (previous && x - previous.x < 96) {
+          next[next.length - 1] = { label, x };
+          continue;
+        }
+        next.push({ label, x });
+      }
+      if (!dead) setTicks(next);
+    };
     void (async () => {
       const payload = await api<{ candles: { time: string; open: number; high: number; low: number; close: number }[] }>("/api/market/candles");
       if (dead || !ref.current) return;
       chart = createChart(ref.current, {
         autoSize: true,
         rightPriceScale: { minimumWidth: 72 },
-        localization: { locale: "en-US" },
+        localization: { locale: "en-US", timeFormatter: (time: Time) => candleStamp(time) },
+        timeScale: {
+          visible: false,
+          borderVisible: false,
+          timeVisible: true,
+          secondsVisible: false,
+          tickMarkMaxCharacterLength: 14,
+          tickMarkFormatter: (time: Time) => candleStamp(time),
+        },
         layout: { attributionLogo: false, background: { type: ColorType.Solid, color: "#1c1c1e" }, textColor: "#f3f3f4" },
         grid: { vertLines: { color: "#2a2a2c" }, horzLines: { color: "#2a2a2c" } },
       });
@@ -272,9 +304,16 @@ export function ChartPage() {
         low: candle.low,
         close: candle.close,
       }));
-      if (!series) return;
+      if (!series || !chart) return;
       series.setData(rows);
       chart.timeScale().fitContent();
+      const apiChart = chart;
+      const draw = () => paint(apiChart, rows);
+      draw();
+      requestAnimationFrame(draw);
+      window.setTimeout(draw, 250);
+      chart.timeScale().subscribeVisibleLogicalRangeChange(draw);
+      chart.timeScale().subscribeSizeChange(draw);
     })();
     return () => { dead = true; chart?.remove(); };
   }, []);
@@ -282,6 +321,11 @@ export function ChartPage() {
     <section className="mx-auto w-full max-w-4xl">
       <h1 className="screen-title">{t("nav.charts")}</h1>
       <div ref={ref} dir="ltr" className="chart-ltr h-[320px] w-full rounded-[var(--radius)] border border-[var(--line)] md:h-[420px]" />
+      <div dir="ltr" data-chart-axis className="chart-axis">
+        {ticks.map((tick) => (
+          <span key={tick.label} style={{ left: tick.x, transform: tick.x < 56 ? "none" : "translateX(-50%)" }}>{tick.label}</span>
+        ))}
+      </div>
     </section>
   );
 }

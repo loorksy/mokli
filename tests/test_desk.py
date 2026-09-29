@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import base64
 from pathlib import Path
 
+import pytest
 from fastapi.testclient import TestClient
 
 from mokli.config import Settings
 from mokli.execution.live_gate import execution_book, live_orders_enabled
 from mokli.market.replay import ReplayClock
 from mokli.memory import recall, remember
+from mokli.voice.local import LOCAL_PHRASE, fixture_wav, silent_wav, synthesize, transcribe
 from mokli.voice.session import VoiceSession, VoiceTurn
 
 
@@ -40,7 +43,40 @@ def test_voice_turn_taking_and_barge_in() -> None:
     assert session.barge_in().state == "listening"
     assert session.turn.interrupted is True
     session.hear("again", reply_of)
-    assert session.finished_speaking().state == "listening"
+    assert session.finished_speaking().state == "idle"
+
+
+def test_local_spoken_loop_ends_idle(tmp_path: Path) -> None:
+    packed = fixture_wav("ما وضع الذهب")
+    assert transcribe(packed) == "ما وضع الذهب"
+    assert transcribe(b"\x1a\x45\xdf\xa3" + b"\x11" * 900) == LOCAL_PHRASE
+    with pytest.raises(ValueError):
+        transcribe(silent_wav())
+    reply = synthesize("الذهب على إعادة تجريبية", "ar")
+    assert reply.startswith(b"RIFF")
+    settings = Settings(mokli_data_dir=str(tmp_path), mokli_passphrase="secret-pass", mokli_live="0")
+    from mokli.gateway.app import create_app
+
+    client = TestClient(create_app(settings))
+    token = client.post("/api/auth/login", json={"passphrase": "secret-pass"}).json()["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    spoken = client.post(
+        "/api/voice/turn",
+        headers=headers,
+        json={"audio_base64": base64.b64encode(packed).decode("ascii"), "lang": "ar"},
+    ).json()
+    assert spoken["state"] == "speaking"
+    assert spoken["transcript"] == "ما وضع الذهب"
+    audio = base64.b64decode(spoken["audio_base64"])
+    assert audio.startswith(b"RIFF")
+    assert client.post("/api/voice/spoken", headers=headers).json()["state"] == "idle"
+    quiet = client.post(
+        "/api/voice/turn",
+        headers=headers,
+        json={"audio_base64": base64.b64encode(silent_wav()).decode("ascii"), "lang": "ar"},
+    ).json()
+    assert quiet["state"] == "idle"
+    assert quiet["error"] == "silent"
 
 
 def test_memory_recalls_by_overlap(tmp_path: Path) -> None:
@@ -87,7 +123,7 @@ def test_desk_replay_voice_and_debate(tmp_path: Path) -> None:
     assert spoken["state"] == "speaking"
     assert spoken["provider"] == "Mokli"
     assert spoken["runtime"] == "Mokli Runtime"
-    assert client.post("/api/voice/spoken", headers=headers).json()["state"] == "listening"
+    assert client.post("/api/voice/spoken", headers=headers).json()["state"] == "idle"
     again = client.post("/api/voice/utterance", headers=headers, json={"transcript": "step the replay"}).json()
     assert again["state"] == "speaking"
     assert client.post("/api/voice/barge", headers=headers).json()["interrupted"] is True

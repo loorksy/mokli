@@ -76,6 +76,21 @@
   "attachNote": "The file name is added to the draft. The image is not analyzed.",
   "name": "Name",
   "saveProfile": "Save profile",
+  "desk": {
+    "bidAsk": "Bid {{bid}} · Ask {{ask}}",
+    "spreadLine": "Spread {{points}}",
+    "balanceLine": "Balance {{balance}}",
+    "position": "Position",
+    "flat": "No open position",
+    "positionLine": "{{side}} {{lots}} at {{entry}}",
+    "buy": "Buy",
+    "sell": "Sell",
+    "next": "Next",
+    "nextLoad": "No price yet. Load the replay.",
+    "nextKilled": "The kill switch is on. Do not open a new trade.",
+    "nextPosition": "A position is open. Watch the stop before adding.",
+    "nextCycle": "Price is ready. Run the analysis cycle, then review the approval."
+  },
   "voiceState": {
     "idle": "Idle",
     "listening": "Listening",

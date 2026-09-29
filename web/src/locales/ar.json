@@ -76,6 +76,21 @@
   "attachNote": "اسم الملف يُضاف إلى المسودة. الصورة لا تُحلَّل.",
   "name": "الاسم",
   "saveProfile": "حفظ الملف الشخصي",
+  "desk": {
+    "bidAsk": "شراء {{bid}} · بيع {{ask}}",
+    "spreadLine": "السبريد {{points}}",
+    "balanceLine": "الرصيد {{balance}}",
+    "position": "المركز",
+    "flat": "لا مركز مفتوح",
+    "positionLine": "{{side}} {{lots}} عند {{entry}}",
+    "buy": "شراء",
+    "sell": "بيع",
+    "next": "التالي",
+    "nextLoad": "لا يوجد سعر. حمّل إعادة التشغيل.",
+    "nextKilled": "الإيقاف الطارئ يعمل. لا تفتح صفقة جديدة.",
+    "nextPosition": "مركز مفتوح. راقب الوقف قبل أي إضافة.",
+    "nextCycle": "السعر جاهز. شغّل دورة التحليل، ثم راجع الموافقة."
+  },
   "voiceState": {
     "idle": "خامل",
     "listening": "يستمع",

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 import json
 import time
 import uuid
@@ -74,6 +75,7 @@ from mokli.schema import (
     utcnow,
 )
 from mokli.skills import Skill, load_skills
+from mokli.voice.local import synthesize, transcribe
 from mokli.voice.session import VoiceSession, VoiceTurn
 
 _TEMPLATE = Path(__file__).resolve().parents[3] / "deploy" / "workspace-template"
@@ -93,6 +95,11 @@ class ChatBody(BaseModel):
 
 class VoiceBody(BaseModel):
     transcript: str = ""
+
+
+class VoiceAudioBody(BaseModel):
+    audio_base64: str
+    lang: str = "ar"
 
 
 class MemoryBody(BaseModel):
@@ -409,6 +416,58 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         hub.voice.start()
         hub.audit("user", "voice.start", "listening")
         return hub.voice.snapshot()
+
+    @app.post("/api/voice/stop")
+    def voice_stop(_user: User = Depends(current_user)) -> dict[str, object]:
+        hub.voice.stop()
+        hub.audit("user", "voice.stop", "idle")
+        return hub.voice.snapshot()
+
+    @app.post("/api/voice/turn")
+    async def voice_turn(body: VoiceAudioBody, _user: User = Depends(current_user)) -> dict[str, object]:
+        try:
+            raw = base64.b64decode(body.audio_base64)
+        except Exception as exc:
+            raise HTTPException(status_code=400, detail="bad audio") from exc
+        hub.voice.start()
+        try:
+            transcript = transcribe(raw)
+        except ValueError:
+            hub.voice.stop()
+            snap = hub.voice.snapshot()
+            snap["error"] = "silent"
+            return snap
+        snapshot = "UNAVAILABLE"
+        if hub.candles and hub.replay.index >= 0:
+            candle = hub.candles[hub.replay.index]
+            snapshot = f"close={candle.close} source={candle.source}"
+        outcome = await run_selected(
+            hub.settings,
+            hub.setting("active_provider", hub.settings.active_provider),
+            transcript,
+            snapshot,
+            session_id="voice",
+            engine=hub.engine,
+        )
+        payload = outcome_payload(outcome)
+        tools = payload["tools"] if isinstance(payload["tools"], list) else []
+        hub.voice.deliver(
+            transcript,
+            VoiceTurn(
+                state="speaking",
+                reply=str(payload["text"]),
+                provider=str(payload["provider"]),
+                model=str(payload["model"]),
+                runtime=str(payload["runtime"]),
+                agent=str(payload["agent"]),
+                status=str(payload["status"]),
+                tools=[str(item) for item in tools],
+            ),
+        )
+        audio = synthesize(str(payload["text"]), body.lang)
+        snap = hub.voice.snapshot()
+        snap["audio_base64"] = base64.b64encode(audio).decode("ascii")
+        return snap
 
     @app.post("/api/voice/utterance")
     async def voice_utterance(body: VoiceBody, _user: User = Depends(current_user)) -> dict[str, object]:

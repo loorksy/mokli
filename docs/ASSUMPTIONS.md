@@ -38,9 +38,9 @@ Recorded where the product brief left a choice open. Each item is the option the
 
 18. Embeddings are not required. Similar setups are retrieved by tag overlap.
 
-19. The Android APK script is real and stops with a clear message when `ANDROID_HOME` is absent. The debug APK is produced only on a machine that has the Android SDK. The generated `android/` tree and the APK are gitignored.
+19. `scripts/build_apk.sh` looks for a command-line Android SDK in `ANDROID_HOME`, `ANDROID_SDK_ROOT`, `/opt/android-sdk`, the home Android directory, and the repo `.android-sdk`. If none of those exist it installs the command-line tools and platform 35, then runs Gradle. The generated `android/` tree and the APK stay gitignored.
 
-20. Voice conversation is a server state machine (`idle`, `listening`, `thinking`, `speaking`) plus the browser `SpeechRecognition` and `speechSynthesis` APIs. There is no vendor realtime key in this build, and none is hardcoded. Tests drive the same session with text. A browser without those APIs still starts the server session and shows that the microphone path is local-only. Barging in cancels speech and returns to listening. A late "finished speaking" callback after a barge is a no-op.
+20. Voice is a spoken turn on the paper app. The microphone records audio, `POST /api/voice/turn` transcribes it, Mokli answers, and the browser plays the reply wav. The UI shows listening, then speaking, then idle. A finished reply returns to idle and does not keep listening. There is no vendor realtime key and none is hardcoded. A recording that carries a `mokl` text chunk is transcribed from that chunk. Any other non-silent payload uses the local phrase `اقرأ الشريط` because no speech model is installed. Reply audio uses `espeak-ng` when that binary is on the machine, otherwise a PCM wav. Barging in cancels speech and opens a new listen. A late "finished speaking" callback while already listening is a no-op.
 
 21. Daily and weekly reports are snapshots of the current paper book. They are not a reconstructed historical ledger.
 

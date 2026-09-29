@@ -52,7 +52,7 @@ If you later add broker credentials for a rehearsal:
 4. Treat MetaApi as disconnected. A token alone leaves it `SIMULATOR` or `UNAVAILABLE`.
 5. Kill switch flattens the paper book and writes an in-app notification. It does not call a broker.
 
-Voice uses the browser speech APIs when they exist. Without a vendor realtime key, the server session still takes turns from text. That path is the local stand-in. It does not open a paid realtime socket.
+Voice records from the microphone, transcribes on the server, and plays Mokli's reply as audio. Without a vendor realtime key the local recognizer reads a transcript packed in the recording, or a fixed phrase for other non-silent audio, and the reply is a wav. The turn shows listening, then speaking, then idle. It does not open a paid realtime socket.
 
 ## Layout
 

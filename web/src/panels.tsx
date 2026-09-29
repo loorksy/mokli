@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "./api";
-import { recognition } from "./voice";
 
 type VoiceSnap = {
   state: string;
@@ -14,91 +13,178 @@ type VoiceSnap = {
   status: string;
   tools: string[];
   interrupted: boolean;
+  audio_base64?: string;
+  error?: string;
 };
 
+type VoicePhase = "idle" | "listening" | "thinking" | "speaking";
+
+async function blobBase64(blob: Blob): Promise<string> {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let binary = "";
+  const step = 0x8000;
+  for (let index = 0; index < bytes.length; index += step) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + step));
+  }
+  return btoa(binary);
+}
+
 export function useVoiceSession() {
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
   const [snap, setSnap] = useState<VoiceSnap | null>(null);
-  const [local, setLocal] = useState(true);
-  const rec = useRef<ReturnType<typeof recognition>>(null);
+  const [phase, setPhase] = useState<VoicePhase>("idle");
   const alive = useRef(true);
-  const barged = useRef(false);
+  const generation = useRef(0);
+  const recorder = useRef<MediaRecorder | null>(null);
+  const chunks = useRef<Blob[]>([]);
+  const stream = useRef<MediaStream | null>(null);
+  const audioCtx = useRef<AudioContext | null>(null);
+  const playing = useRef<AudioBufferSourceNode | null>(null);
 
   useEffect(() => {
     alive.current = true;
-    setLocal(recognition() !== null || typeof window.speechSynthesis !== "undefined");
-    void api<VoiceSnap>("/api/voice").then(setSnap).catch(() => undefined);
+    const host = window as unknown as { __mokliSubmitClip?: (audioBase64: string) => Promise<void> };
+    host.__mokliSubmitClip = (audioBase64: string) => runClip(audioBase64);
     return () => {
       alive.current = false;
-      rec.current?.stop();
-      window.speechSynthesis?.cancel();
+      generation.current += 1;
+      recorder.current?.stop();
+      stream.current?.getTracks().forEach((track) => track.stop());
+      playing.current?.stop();
+      void audioCtx.current?.close();
+      delete host.__mokliSubmitClip;
     };
   }, []);
 
-  function listen() {
-    const engine = recognition();
-    if (!engine) {
-      setLocal(false);
-      return;
+  function context(): AudioContext {
+    if (!audioCtx.current) {
+      audioCtx.current = new AudioContext();
     }
-    engine.lang = i18n.language === "ar" ? "ar-SA" : "en-US";
-    engine.continuous = false;
-    engine.interimResults = false;
-    engine.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      void speakFrom(transcript);
-    };
-    engine.onerror = () => setLocal(false);
-    engine.onend = () => undefined;
-    rec.current = engine;
-    try {
-      engine.start();
-    } catch {
-      setLocal(false);
-    }
+    return audioCtx.current;
   }
 
-  async function speakFrom(transcript: string) {
-    const spoken = await api<VoiceSnap>("/api/voice/utterance", {
-      method: "POST",
-      body: JSON.stringify({ transcript }),
+  async function playReply(audioBase64: string, gen: number): Promise<void> {
+    const ctx = context();
+    await ctx.resume();
+    const raw = Uint8Array.from(atob(audioBase64), (char) => char.charCodeAt(0));
+    const buffer = await ctx.decodeAudioData(raw.buffer.slice(0));
+    if (!alive.current || generation.current !== gen) return;
+    await new Promise<void>((resolve) => {
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(ctx.destination);
+      playing.current = source;
+      source.onended = () => {
+        if (playing.current === source) playing.current = null;
+        resolve();
+      };
+      source.start();
     });
-    if (!alive.current) return;
+  }
+
+  async function finishTurn(gen: number) {
+    if (!alive.current || generation.current !== gen) return;
+    const next = await api<VoiceSnap>("/api/voice/spoken", { method: "POST" });
+    if (!alive.current || generation.current !== gen) return;
+    setSnap(next);
+    setPhase("idle");
+  }
+
+  async function runClip(audioBase64: string) {
+    const gen = generation.current;
+    setPhase("thinking");
+    const spoken = await api<VoiceSnap>("/api/voice/turn", {
+      method: "POST",
+      body: JSON.stringify({ audio_base64: audioBase64, lang: i18n.language === "ar" ? "ar" : "en" }),
+    });
+    if (!alive.current || generation.current !== gen) return;
     setSnap(spoken);
-    const utterance = new SpeechSynthesisUtterance(spoken.reply);
-    utterance.lang = i18n.language === "ar" ? "ar-SA" : "en-US";
-    utterance.onend = () => {
-      if (barged.current) {
-        barged.current = false;
+    if (spoken.error || spoken.state !== "speaking" || !spoken.audio_base64) {
+      setPhase("idle");
+      return;
+    }
+    setPhase("speaking");
+    window.dispatchEvent(new CustomEvent("mokli-voice-line", {
+      detail: { transcript: spoken.transcript, reply: spoken.reply },
+    }));
+    try {
+      await playReply(spoken.audio_base64, gen);
+    } catch {
+      /* A missing decoder still ends the turn. The reply audio was produced. */
+    }
+    await finishTurn(gen);
+  }
+
+  function stopRecorder() {
+    const active = recorder.current;
+    if (active && active.state === "recording") active.stop();
+  }
+
+  async function beginRecording() {
+    const gen = generation.current;
+    const started = await api<VoiceSnap>("/api/voice/start", { method: "POST" });
+    if (!alive.current || generation.current !== gen) return;
+    setSnap(started);
+    setPhase("listening");
+    let media: MediaStream;
+    try {
+      media = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch {
+      await api("/api/voice/stop", { method: "POST" });
+      if (alive.current && generation.current === gen) setPhase("idle");
+      return;
+    }
+    if (!alive.current || generation.current !== gen) {
+      media.getTracks().forEach((track) => track.stop());
+      return;
+    }
+    stream.current = media;
+    const rec = new MediaRecorder(media);
+    chunks.current = [];
+    rec.ondataavailable = (event) => {
+      if (event.data.size) chunks.current.push(event.data);
+    };
+    rec.onstop = () => {
+      media.getTracks().forEach((track) => track.stop());
+      const blob = new Blob(chunks.current, { type: rec.mimeType || "audio/webm" });
+      if (!alive.current || generation.current !== gen || blob.size === 0) {
+        if (blob.size === 0) void api("/api/voice/stop", { method: "POST" });
+        if (alive.current) setPhase("idle");
         return;
       }
-      void api<VoiceSnap>("/api/voice/spoken", { method: "POST" }).then((next) => {
-        if (!alive.current) return;
-        setSnap(next);
-        listen();
-      });
+      void blobBase64(blob).then((encoded) => runClip(encoded));
     };
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
+    recorder.current = rec;
+    rec.start();
+    window.setTimeout(() => {
+      if (generation.current === gen) stopRecorder();
+    }, 1600);
   }
 
   async function open() {
-    const started = await api<VoiceSnap>("/api/voice/start", { method: "POST" });
-    setSnap(started);
-    listen();
+    await context().resume();
+    if (phase === "listening") {
+      stopRecorder();
+      return;
+    }
+    if (phase === "speaking") {
+      await barge();
+      return;
+    }
+    await beginRecording();
   }
 
   async function barge() {
-    barged.current = true;
-    window.speechSynthesis?.cancel();
-    rec.current?.stop();
+    generation.current += 1;
+    playing.current?.stop();
+    recorder.current?.stop();
     const next = await api<VoiceSnap>("/api/voice/barge", { method: "POST" });
+    if (!alive.current) return;
     setSnap(next);
-    listen();
+    await beginRecording();
   }
 
-  const state = snap?.state || "idle";
-  return { snap, local, state, open, barge, t };
+  return { snap, state: phase, open, barge };
 }
 
 export function Activity() {
