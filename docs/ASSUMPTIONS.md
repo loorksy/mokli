@@ -38,4 +38,10 @@ Recorded where the product brief left a choice open. Each item is the option the
 
 18. Embeddings are not required. Similar setups are retrieved by tag overlap.
 
-19. The Android APK script is real and stops with a clear message when `ANDROID_HOME` is absent. This environment has no Android SDK, so the APK is not produced here.
+19. The Android APK script is real and stops with a clear message when `ANDROID_HOME` is absent. The debug APK is produced only on a machine that has the Android SDK. The generated `android/` tree and the APK are gitignored.
+
+20. Voice conversation is a server state machine (`idle`, `listening`, `thinking`, `speaking`) plus the browser `SpeechRecognition` and `speechSynthesis` APIs. There is no vendor realtime key in this build, and none is hardcoded. Tests drive the same session with text. A browser without those APIs still starts the server session and shows that the microphone path is local-only. Barging in cancels speech and returns to listening. A late "finished speaking" callback after a barge is a no-op.
+
+21. Daily and weekly reports are snapshots of the current paper book. They are not a reconstructed historical ledger.
+
+22. OANDA, MetaApi, and Telegram stay disconnected when their credentials are absent. Credentials without `MOKLI_LIVE=1` and the settings confirmation do not enable live orders. This build refuses the live approval path even when both flags are set.

@@ -40,5 +40,30 @@
   "mode": "Mode",
   "agent": "Agent",
   "status": "Status",
-  "tools": "Tools"
+  "tools": "Tools",
+  "voice": "Voice",
+  "talk": "Talk",
+  "barge": "Interrupt",
+  "voiceLocal": "This browser has no speech engine. The server session still takes turns; Chromium supplies the microphone and the voice.",
+  "fallback": "Fallback",
+  "newsPhase": "News phase",
+  "calendar": "Calendar",
+  "memory": "Memory",
+  "closed": "Closed trades",
+  "step": "Step",
+  "arm": "Arm replay",
+  "bid": "Bid",
+  "ask": "Ask",
+  "spread": "Spread",
+  "notifications": "Notifications",
+  "positions": "Positions",
+  "ordersPaper": "Orders stay on the paper book.",
+  "liveLocked": "Live orders stay off unless MOKLI_LIVE is 1 and this confirmation is on. A token does not open the live book.",
+  "markRead": "Mark read",
+  "voiceState": {
+    "idle": "Idle",
+    "listening": "Listening",
+    "thinking": "Thinking",
+    "speaking": "Speaking"
+  }
 }

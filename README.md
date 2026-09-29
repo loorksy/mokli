@@ -25,10 +25,34 @@ Open `http://127.0.0.1:5173`. Arabic is the default. The chart stays left-to-rig
 
 ## Safety
 
-- `MOKLI_LIVE` defaults to `0`.
+- `MOKLI_LIVE` defaults to unset, which the process reads as `0`. Leave it unset.
 - A settings checkbox stores confirmation. It does not enable live trading by itself.
+- A MetaApi token, an OANDA token, or a Telegram bot token does not place a live order.
+- Live orders need both `MOKLI_LIVE=1` and the confirmation flag. This build still refuses that path: approval returns 409 and the fill stays on `PaperBroker`. Do not set `MOKLI_LIVE` until a later release wires a live adapter on purpose.
 - Broker tools are rejected if an MCP server tries to expose them.
 - Missing prices stay missing. Replay data is labeled `SIMULATOR`.
+
+## Safe live deployment
+
+Paper and replay are the deployment you run. Bind the API to `127.0.0.1`. Put secrets in the environment, never in the repo.
+
+```bash
+export MOKLI_PASSPHRASE='change-me'
+# Do not export MOKLI_LIVE.
+docker compose up --build
+```
+
+Compose publishes `127.0.0.1:8787` and sets `MOKLI_LIVE=0` inside the container. The process listens on `0.0.0.0` only so the published port can reach it.
+
+If you later add broker credentials for a rehearsal:
+
+1. Keep `MOKLI_LIVE` unset.
+2. Leave the settings confirmation off.
+3. Confirm `/api/live` reports `mode=paper` and `orders=paper` before any approval.
+4. Treat MetaApi as disconnected. A token alone leaves it `SIMULATOR` or `UNAVAILABLE`.
+5. Kill switch flattens the paper book and writes an in-app notification. It does not call a broker.
+
+Voice uses the browser speech APIs when they exist. Without a vendor realtime key, the server session still takes turns from text. That path is the local stand-in. It does not open a paid realtime socket.
 
 ## Layout
 

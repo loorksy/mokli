@@ -43,7 +43,7 @@ export default function App() {
           <div className="text-lg font-semibold text-[var(--gold)]">{t("app")}</div>
           <div className="text-xs text-[var(--muted)]">{t("tagline")}</div>
         </div>
-        <nav className="flex gap-2 overflow-x-auto md:flex-col">
+        <nav className="flex max-w-full gap-2 overflow-x-auto md:flex-col">
           {links.map(([path, key]) => (
             <NavLink
               key={path}
@@ -58,7 +58,7 @@ export default function App() {
           ))}
         </nav>
       </aside>
-      <main className="p-4 md:p-6">
+      <main className="min-w-0 p-4 md:p-6">
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/chat" element={<Chat />} />

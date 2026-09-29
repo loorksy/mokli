@@ -17,6 +17,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from sqlmodel import Session, col, select
 
+from mokli.agent.debate import run_debate
+from mokli.agent.mcp_bridge import analysis_server
 from mokli.charts import render_snapshot
 from mokli.config import Settings, load_settings
 from mokli.cycle import cycle_json, run_cycle
@@ -29,16 +31,21 @@ from mokli.db import (
     new_token,
     verify_passphrase,
 )
+from mokli.execution.live_gate import execution_book
+from mokli.execution.metaapi import status as metaapi_status
 from mokli.execution.paper import PaperBroker
 from mokli.execution.reconcile import reconcile
 from mokli.market.candles import Candle, load_csv, synthetic_candles
 from mokli.market.candles import atr as atr_value
+from mokli.market.replay import ReplayClock, market_status, quote_from_candle
+from mokli.memory import recall, remember
 from mokli.models import Account, Market, Proposal
 from mokli.news.classify import classify_news_candle
 from mokli.news.machine import news_state
 from mokli.risk.guardrails import execution_recheck
 from mokli.rules_loader import load_rules
 from mokli.runtime.catalog import public_catalog, specs
+from mokli.runtime.mcp_registry import McpRegistry
 from mokli.runtime.persist import outcome_payload
 from mokli.runtime.service import run_selected
 from mokli.schema import (
@@ -67,6 +74,7 @@ from mokli.schema import (
     utcnow,
 )
 from mokli.skills import Skill, load_skills
+from mokli.voice.session import VoiceSession, VoiceTurn
 
 _TEMPLATE = Path(__file__).resolve().parents[3] / "deploy" / "workspace-template"
 
@@ -79,6 +87,16 @@ class LoginBody(BaseModel):
 class ChatBody(BaseModel):
     message: str
     session_id: str = "main"
+
+
+class VoiceBody(BaseModel):
+    transcript: str = ""
+
+
+class MemoryBody(BaseModel):
+    kind: str = "note"
+    body: str
+    tags: str = ""
 
 
 class SettingsBody(BaseModel):
@@ -108,6 +126,8 @@ class Hub:
         self.queues: list[asyncio.Queue[dict[str, object]]] = []
         self.hits: dict[str, deque[float]] = defaultdict(deque)
         self.event_time: datetime | None = None
+        self.replay = ReplayClock()
+        self.voice = VoiceSession()
         self._seed_workspace()
         self._reconcile_boot()
 
@@ -182,9 +202,7 @@ class Hub:
 
     def live_mode(self) -> str:
         confirmed = self.setting("live_confirmed", "0") == "1"
-        if self.settings.live_flag and confirmed:
-            return "live"
-        return "paper"
+        return execution_book(mokli_live=self.settings.mokli_live, confirmed=confirmed)
 
     def audit(self, actor: str, action: str, detail: str) -> None:
         with Session(self.engine) as session:
@@ -270,19 +288,19 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "status": last.get("status", "idle"),
             "tools": last.get("tools", []),
             "killed": hub.broker.killed,
-            "freshness": hub.candles[-1].time.isoformat() if hub.candles else None,
-            "source": hub.candles[-1].source if hub.candles else hub.market_state,
+            "freshness": hub.candles[hub.replay.index].time.isoformat() if hub.candles and hub.replay.index >= 0 else None,
+            "source": hub.candles[hub.replay.index].source if hub.candles and hub.replay.index >= 0 else hub.market_state,
+            "book": _market_payload(hub),
         }
 
     @app.post("/api/market/replay/synthetic")
     def synthetic(_user: User = Depends(current_user), count: int = 180, seed: int = 7) -> dict[str, object]:
         hub.candles = synthetic_candles(count=count, seed=seed)
-        hub.market_state = "SIMULATOR"
-        last = hub.candles[-1]
-        hub.broker.quote(last.close - 0.09, last.close + 0.09, last.time)
+        hub.replay.arm(len(hub.candles), start=len(hub.candles) - 1)
+        _apply_replay_quote(hub)
         _store_candles(hub)
         hub.audit("user", "replay.synthetic", f"seed={seed} count={count}")
-        return {"state": hub.market_state, "candles": len(hub.candles), "last": last.close}
+        return {"state": hub.market_state, "candles": len(hub.candles), "last": hub.candles[-1].close}
 
     @app.post("/api/market/replay/csv")
     def replay_csv(path: str, _user: User = Depends(current_user)) -> dict[str, object]:
@@ -290,12 +308,30 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if not file_path.is_file():
             raise HTTPException(status_code=404, detail="csv not found")
         hub.candles = load_csv(file_path)
-        hub.market_state = "SIMULATOR"
-        if hub.candles:
-            last = hub.candles[-1]
-            hub.broker.quote(last.close - 0.09, last.close + 0.09, last.time)
+        hub.replay.arm(len(hub.candles), start=max(len(hub.candles) - 1, 0))
+        _apply_replay_quote(hub)
         _store_candles(hub)
         return {"state": hub.market_state, "candles": len(hub.candles)}
+
+    @app.post("/api/market/replay/arm")
+    def replay_arm(_user: User = Depends(current_user), start: int = 40) -> dict[str, object]:
+        if not hub.candles:
+            raise HTTPException(status_code=409, detail="UNAVAILABLE")
+        hub.replay.arm(len(hub.candles), start=start)
+        _apply_replay_quote(hub)
+        return _market_payload(hub)
+
+    @app.post("/api/market/replay/step")
+    def replay_step(_user: User = Depends(current_user)) -> dict[str, object]:
+        if not hub.candles:
+            raise HTTPException(status_code=409, detail="UNAVAILABLE")
+        hub.replay.step(len(hub.candles))
+        _apply_replay_quote(hub)
+        return _market_payload(hub)
+
+    @app.get("/api/market/status")
+    def market_status_route(_user: User = Depends(current_user)) -> dict[str, object]:
+        return _market_payload(hub)
 
     @app.get("/api/market/candles")
     def candles(_user: User = Depends(current_user)) -> dict[str, object]:
@@ -353,7 +389,65 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             session.add(Message(session_id=body.session_id, role="mokli", body=str(payload["text"])))
             session.commit()
         hub.publish("agent_message_completed", {"text": payload["text"], "session_id": body.session_id, "provider": payload["provider"], "runtime": payload["runtime"]})
+        events = payload["events"]
+        if isinstance(events, list) and "provider_fallback_started" in events:
+            notice_title, notice_body = _desk_copy(hub, "fallback", provider=str(payload["provider"]), runtime=str(payload["runtime"]))
+            _notify(hub, "info", notice_title, notice_body, [])
         return payload
+
+    @app.get("/api/voice")
+    def voice_state(_user: User = Depends(current_user)) -> dict[str, object]:
+        return hub.voice.snapshot()
+
+    @app.post("/api/voice/start")
+    def voice_start(_user: User = Depends(current_user)) -> dict[str, object]:
+        hub.voice.start()
+        hub.audit("user", "voice.start", "listening")
+        return hub.voice.snapshot()
+
+    @app.post("/api/voice/utterance")
+    async def voice_utterance(body: VoiceBody, _user: User = Depends(current_user)) -> dict[str, object]:
+        snapshot = "UNAVAILABLE"
+        if hub.candles and hub.replay.index >= 0:
+            candle = hub.candles[hub.replay.index]
+            snapshot = f"close={candle.close} source={candle.source}"
+        if hub.voice.turn.state == "idle":
+            hub.voice.start()
+        outcome = await run_selected(
+            hub.settings,
+            hub.setting("active_provider", hub.settings.active_provider),
+            body.transcript,
+            snapshot,
+            session_id="voice",
+            engine=hub.engine,
+        )
+        payload = outcome_payload(outcome)
+        tools = payload["tools"] if isinstance(payload["tools"], list) else []
+        hub.voice.deliver(
+            body.transcript,
+            VoiceTurn(
+                state="speaking",
+                reply=str(payload["text"]),
+                provider=str(payload["provider"]),
+                model=str(payload["model"]),
+                runtime=str(payload["runtime"]),
+                agent=str(payload["agent"]),
+                status=str(payload["status"]),
+                tools=[str(item) for item in tools],
+            ),
+        )
+        return hub.voice.snapshot()
+
+    @app.post("/api/voice/spoken")
+    def voice_spoken(_user: User = Depends(current_user)) -> dict[str, object]:
+        hub.voice.finished_speaking()
+        return hub.voice.snapshot()
+
+    @app.post("/api/voice/barge")
+    def voice_barge(_user: User = Depends(current_user)) -> dict[str, object]:
+        hub.voice.barge_in()
+        hub.audit("user", "voice.barge", hub.voice.turn.state)
+        return hub.voice.snapshot()
 
     @app.get("/api/activity")
     def activity(_user: User = Depends(current_user)) -> dict[str, object]:
@@ -368,6 +462,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     "runtime": item.runtime,
                     "model": item.model,
                     "fallback_from": item.fallback_from,
+                    "fallback_provider": item.fallback_provider,
+                    "fallback_reason": item.fallback_reason,
                     "error": item.error,
                 }
                 for item in runs
@@ -412,7 +508,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         hub.broker.kill()
         hub.audit("user", "kill_switch", "flattened paper book")
         hub.publish("agent_message_completed", {"level": "critical", "title": "Kill switch"})
-        _notify(hub, "critical", "Kill switch", "Positions flattened and pending orders cancelled.", [])
+        title, body = _desk_copy(hub, "kill")
+        _notify(hub, "critical", title, body, [])
         return hub.broker.snapshot()
 
     @app.get("/api/positions")
@@ -556,9 +653,67 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             rows = session.exec(select(Notification).order_by(Notification.created_at.desc())).all()[:50]  # type: ignore[attr-defined]
         return {
             "notifications": [
-                {"id": row.id, "level": row.level, "title": row.title, "body": row.body, "actions": json.loads(row.actions)}
+                {
+                    "id": row.id,
+                    "level": row.level,
+                    "title": row.title,
+                    "body": row.body,
+                    "read": row.read,
+                    "actions": json.loads(row.actions),
+                }
                 for row in rows
-            ]
+            ],
+            "channel": "in_app" if not (hub.settings.telegram_bot_token and hub.settings.telegram_chat_id) else "telegram",
+        }
+
+    @app.post("/api/notifications/{note_id}/read")
+    def read_notification(note_id: str, _user: User = Depends(current_user)) -> dict[str, object]:
+        with Session(hub.engine) as session:
+            row = session.get(Notification, note_id)
+            if row is None:
+                raise HTTPException(status_code=404, detail="notification not found")
+            row.read = True
+            session.add(row)
+            session.commit()
+        return {"id": note_id, "read": True}
+
+    @app.get("/api/memory")
+    def memory_list(q: str = "", _user: User = Depends(current_user)) -> dict[str, object]:
+        rows = recall(hub.engine, q)
+        return {"memories": [{"id": row.id, "kind": row.kind, "body": row.body} for row in rows]}
+
+    @app.post("/api/memory")
+    def memory_add(body: MemoryBody, _user: User = Depends(current_user)) -> dict[str, object]:
+        row = remember(hub.engine, body.kind, body.body, body.tags)
+        return {"id": row.id, "kind": row.kind, "body": row.body}
+
+    @app.get("/api/mcp")
+    def mcp_tools(_user: User = Depends(current_user)) -> dict[str, object]:
+        registry = McpRegistry()
+        registry.register(
+            "analysis",
+            analysis_server(lambda: "desk"),
+            {"atr_value_tool"},
+            side_effects={"atr_value_tool": "read"},
+        )
+        registry.permit("mokli", {"atr_value_tool"})
+        names = asyncio.run(registry.discover("mokli"))
+        return {"tools": names, "broker_blocked": ["place_order", "broker_market", "broker_close", "broker_modify", "broker_kill"]}
+
+    @app.get("/api/live")
+    def live_status(_user: User = Depends(current_user)) -> dict[str, object]:
+        adapter = metaapi_status(
+            token=hub.settings.metaapi_token,
+            account_id=hub.settings.metaapi_account_id,
+            live_mode=hub.live_mode(),
+        )
+        return {
+            "mode": hub.live_mode(),
+            "mokli_live": hub.settings.mokli_live,
+            "confirmed": hub.setting("live_confirmed", "0") == "1",
+            "orders": "paper",
+            "metaapi": adapter.state,
+            "detail": adapter.detail,
         }
 
     @app.get("/api/chart.png")
@@ -596,10 +751,42 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
         return StreamingResponse(stream(), media_type="text/event-stream")
 
-    dist = Path(__file__).resolve().parents[3] / "web" / "dist"
-    if dist.exists():
+    dist = _ui_dist()
+    if dist is not None:
         app.mount("/", StaticFiles(directory=dist, html=True), name="ui")
     return app
+
+
+def _ui_dist() -> Path | None:
+    candidates = [
+        Path(__file__).resolve().parents[3] / "web" / "dist",
+        Path("/app/web/dist"),
+        Path.cwd() / "web" / "dist",
+    ]
+    for candidate in candidates:
+        if (candidate / "index.html").is_file():
+            return candidate
+    return None
+
+
+def _apply_replay_quote(hub: Hub) -> None:
+    if not hub.candles or hub.replay.index < 0:
+        hub.market_state = "UNAVAILABLE"
+        return
+    candle = hub.candles[hub.replay.index]
+    bid, ask = quote_from_candle(candle, hub.settings.point_size)
+    hub.broker.quote(bid, ask, candle.time)
+    hub.market_state = "SIMULATOR" if candle.source == "simulator" else candle.source.upper()
+
+
+def _market_payload(hub: Hub) -> dict[str, object]:
+    return market_status(
+        hub.candles,
+        hub.replay.index,
+        bid=hub.broker.bid,
+        ask=hub.broker.ask,
+        killed=hub.broker.killed,
+    )
 
 
 def _runtime_name(hub: Hub) -> str:
@@ -700,20 +887,29 @@ def _run_and_store(hub: Hub) -> dict[str, object]:
     runtime = _runtime_name(hub)
     model = _model_name(hub)
     result = run_cycle(hub.candles, hub.broker, event_time=hub.event_time)
-    roles = ["research", "bull", "bear", "greed", "emotion", "professional", "review"]
+    children = asyncio.run(
+        run_debate(result, parent_id=parent, provider=provider, model=model, runtime=runtime)
+    )
     with Session(hub.engine) as session:
         session.add(AgentRun(id=parent, role="mokli", provider=provider, runtime=runtime, model=model, status="completed", session_id="main"))
-        for role in roles:
+        for child in children:
             session.add(
                 AgentRun(
-                    id=uuid.uuid4().hex[:12],
+                    id=str(child["id"]),
                     parent_id=parent,
-                    role=role,
-                    provider=provider,
-                    runtime=runtime,
-                    model=model,
-                    status="completed",
-                    session_id="main",
+                    role=str(child["role"]),
+                    provider=str(child["provider"]),
+                    runtime=str(child["runtime"]),
+                    model=str(child["model"]),
+                    status=str(child["status"]),
+                    session_id="debate",
+                )
+            )
+            session.add(
+                AgentEvent(
+                    run_id=str(child["id"]),
+                    kind="subagent_completed",
+                    payload=json.dumps({"role": child["role"], "text": child["text"], "audit": child["audit"]}),
                 )
             )
         for note in result.notes:
@@ -740,12 +936,13 @@ def _run_and_store(hub: Hub) -> dict[str, object]:
         if result.verdict in {"buy", "sell"} and result.proposal and mode == "approval":
             approval_id = uuid.uuid4().hex[:12]
             session.add(Approval(id=approval_id, status="pending", payload=json.dumps(result.proposal), decision_id=result.decision_id))
+            title, body = _desk_copy(hub, "approval", verdict=result.verdict, entry=result.proposal.get("entry"))
             session.add(
                 Notification(
                     id=uuid.uuid4().hex[:12],
                     level="action",
-                    title="Approval required",
-                    body=f"{result.verdict} {result.proposal.get('entry')}",
+                    title=title,
+                    body=body,
                     actions=json.dumps([{"id": "approve", "approval_id": approval_id}, {"id": "reject", "approval_id": approval_id}]),
                 )
             )
@@ -816,6 +1013,25 @@ def _resolve(hub: Hub, approval_id: str, accept: bool) -> dict[str, object]:
     return {"status": "executed", "snapshot": hub.broker.snapshot()}
 
 
+def _desk_copy(hub: Hub, key: str, **values: object) -> tuple[str, str]:
+    arabic = hub.setting("language", "ar") == "ar"
+    if key == "kill":
+        if arabic:
+            return "إيقاف طارئ", "أُغلقت المراكز وأُلغيت الأوامر المعلقة."
+        return "Kill switch", "Positions flattened and pending orders cancelled."
+    if key == "approval":
+        verdict = values.get("verdict")
+        entry = values.get("entry")
+        if arabic:
+            return "موافقة مطلوبة", f"اقتراح {verdict} عند {entry}"
+        return "Approval required", f"{verdict} {entry}"
+    provider = values.get("provider")
+    runtime = values.get("runtime")
+    if arabic:
+        return "تحويل المزوّد", f"{provider} عبر {runtime}"
+    return "Provider fallback", f"{provider} via {runtime}"
+
+
 def _notify(hub: Hub, level: str, title: str, body: str, actions: list[dict[str, str]]) -> None:
     with Session(hub.engine) as session:
         session.add(Notification(id=uuid.uuid4().hex[:12], level=level, title=title, body=body, actions=json.dumps(actions)))
@@ -846,4 +1062,5 @@ def _report(hub: Hub) -> dict[str, object]:
         "realized": round(sum(item.realized for item in closed), 2),
         "mode": hub.live_mode(),
         "market_state": hub.market_state,
+        "open_positions": sum(1 for item in hub.broker.positions.values() if item.status == "open"),
     }
