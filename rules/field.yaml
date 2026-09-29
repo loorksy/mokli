@@ -1,0 +1,2167 @@
+- id: field.001
+  category: entry
+  title_en: Move past classic support and resistance. The agent does not have to wait
+    for a touch of a horizontal line. In strong trends, gold often reacts from dynamic
+    trendlines or from liquidity gaps in the middle of the distance.
+  title_ar: 'الدخول: Move past classic support and resistance. The agent does not
+    have to wait for a touch of a horizontal line. In strong trends, gold often reacts
+    from dynamic trendlines or from liquidity gaps in the middle of the distance.'
+  type: detector
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.002
+  category: entry
+  title_en: Immediate entry without waiting. If buy or sell conditions are complete
+    and liquidity has already been swept, send a market entry. Do not wait for extra
+    downside or upside that misses the move.
+  title_ar: 'الدخول: Immediate entry without waiting. If buy or sell conditions are
+    complete and liquidity has already been swept, send a market entry. Do not wait
+    for extra downside or upside that misses the move.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.003
+  category: entry
+  title_en: Distance-versus-target contradiction. If entry requires a 100-point pullback
+    to a level, while the total target is only 100 points, the trade is logically
+    inconsistent. Priority goes to entering with current momentum.
+  title_ar: 'الدخول: Distance-versus-target contradiction. If entry requires a 100-point
+    pullback to a level, while the total target is only 100 points, the trade is logically
+    inconsistent. Priority goes to entering with current momentum.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.004
+  category: entry
+  title_en: Anticipatory entry before the close. On explosive gold momentum candles,
+    waiting for the close is not always required. Waiting can consume 60% of the expected
+    range.
+  title_ar: 'الدخول: Anticipatory entry before the close. On explosive gold momentum
+    candles, waiting for the close is not always required. Waiting can consume 60%
+    of the expected range.'
+  type: detector
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.005
+  category: entry
+  title_en: Incomplete retracement (front-running). Institutions often place orders
+    several points before support and resistance. Open an entry window that starts
+    15 to 30 gold points before the level.
+  title_ar: 'الدخول: Incomplete retracement (front-running). Institutions often place
+    orders several points before support and resistance. Open an entry window that
+    starts 15 to 30 gold points before the level.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.006
+  category: entry
+  title_en: Enter the liquidity gap (FVG), not the high. In an uptrend, gold often
+    turns from the first fair value gap above the broken high, rather than falling
+    back to retest that high.
+  title_ar: 'الدخول: Enter the liquidity gap (FVG), not the high. In an uptrend, gold
+    often turns from the first fair value gap above the broken high, rather than falling
+    back to retest that high.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.007
+  category: entry
+  title_en: Entry with a counter engulfing candle. If prior candles drifted lower
+    and a strong bullish candle engulfs two of them, that is an immediate buy. A support
+    touch is not required.
+  title_ar: 'الدخول: Entry with a counter engulfing candle. If prior candles drifted
+    lower and a strong bullish candle engulfs two of them, that is an immediate buy.
+    A support touch is not required.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.008
+  category: entry
+  title_en: Direct breakout entry during liquidity hours. At the London or New York
+    open, a sharp break of the Asian range is treated as a momentum entry. Do not
+    wait for a pullback.
+  title_ar: 'الدخول: Direct breakout entry during liquidity hours. At the London or
+    New York open, a sharp break of the Asian range is treated as a momentum entry.
+    Do not wait for a pullback.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.009
+  category: entry
+  title_en: Entry at equilibrium. In large impulse waves, the 50% level of the wave
+    is a preferred entry even if it does not match a prior high or low.
+  title_ar: 'الدخول: Entry at equilibrium. In large impulse waves, the 50% level of
+    the wave is a preferred entry even if it does not match a prior high or low.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.010
+  category: entry
+  title_en: Two timeframes agreeing on timing. If an M15 reversal pattern forms while
+    H1 is mid-candle in a directional candle, priority is the intraday entry in the
+    H1 direction.
+  title_ar: 'الدخول: Two timeframes agreeing on timing. If an M15 reversal pattern
+    forms while H1 is mid-candle in a directional candle, priority is the intraday
+    entry in the H1 direction.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.011
+  category: entry
+  title_en: Fan-line entry. When gold’s decline or rally accelerates, build the entry
+    on the steeper trendline, not the slow primary trendline.
+  title_ar: 'الدخول: Fan-line entry. When gold’s decline or rally accelerates, build
+    the entry on the steeper trendline, not the slow primary trendline.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.012
+  category: entry
+  title_en: Cancel a conditional entry when time stalls. If price has not reached
+    the conditional entry zone within 4 hours, cancel the idea. A break of the zone
+    is then more likely than a bounce.
+  title_ar: 'الدخول: Cancel a conditional entry when time stalls. If price has not
+    reached the conditional entry zone within 4 hours, cancel the idea. A break of
+    the zone is then more likely than a bounce.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.013
+  category: entry
+  title_en: Entry from the news-candle low. The candle produced by an economic release
+    becomes support by itself. Enter on a touch of that candle’s wick, not by waiting
+    for the day’s low.
+  title_ar: 'الدخول: Entry from the news-candle low. The candle produced by an economic
+    release becomes support by itself. Enter on a touch of that candle’s wick, not
+    by waiting for the day’s low.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.014
+  category: entry
+  title_en: Entry on price absorption. Repeated lower wicks inside a tight price area
+    are an immediate buy signal. Drawn technical lines are not required.
+  title_ar: 'الدخول: Entry on price absorption. Repeated lower wicks inside a tight
+    price area are an immediate buy signal. Drawn technical lines are not required.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.015
+  category: entry
+  title_en: “Break the minor trendline” entry. During a correction, a break of the
+    minor descending trendline is the buy signal in the direction of the higher uptrend.
+  title_ar: 'الدخول: “Break the minor trendline” entry. During a correction, a break
+    of the minor descending trendline is the buy signal in the direction of the higher
+    uptrend.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.016
+  category: entry
+  title_en: Do not wait for a pullback in a steep trend. When gold’s rally angle exceeds
+    60 degrees, waiting for a deep pullback misses the entire rally.
+  title_ar: 'الدخول: Do not wait for a pullback in a steep trend. When gold’s rally
+    angle exceeds 60 degrees, waiting for a deep pullback misses the entire rally.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.017
+  category: entry
+  title_en: Entry on round-number touches. Levels such as 2400 or 2450 are automatic
+    psychological entry zones if a reversal candle prints there, even without prior
+    support.
+  title_ar: 'الدخول: Entry on round-number touches. Levels such as 2400 or 2450 are
+    automatic psychological entry zones if a reversal candle prints there, even without
+    prior support.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.018
+  category: entry
+  title_en: Entry after a bearish pattern fails. If a double top fails to push price
+    down and price breaks the neckline upward, activate the opposite buy immediately.
+  title_ar: 'الدخول: Entry after a bearish pattern fails. If a double top fails to
+    push price down and price breaks the neckline upward, activate the opposite buy
+    immediately.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.019
+  category: entry
+  title_en: Entry conditioned on candle sequence. Three rising candles with expanding
+    volume (Three White Soldiers) after chop are a sufficient entry reason. Indicators
+    are not required.
+  title_ar: 'الدخول: Entry conditioned on candle sequence. Three rising candles with
+    expanding volume (Three White Soldiers) after chop are a sufficient entry reason.
+    Indicators are not required.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.020
+  category: entry
+  title_en: Reclaim entry. A drop below support followed by a fast close back above
+    it in the same candle is an immediate buy.
+  title_ar: 'الدخول: Reclaim entry. A drop below support followed by a fast close
+    back above it in the same candle is an immediate buy.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.021
+  category: entry
+  title_en: Hourly-close entry. Enter at minute 59 of the hour if that candle confirms
+    a break of an important level, to avoid slippage in the first minute of the new
+    hour.
+  title_ar: 'الدخول: Hourly-close entry. Enter at minute 59 of the hour if that candle
+    confirms a break of an important level, to avoid slippage in the first minute
+    of the new hour.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.022
+  category: entry
+  title_en: Entry along the fast moving average. In strong trends, a gold reaction
+    from the 20 EMA is enough. Prior lows are not required.
+  title_ar: 'الدخول: Entry along the fast moving average. In strong trends, a gold
+    reaction from the 20 EMA is enough. Prior lows are not required.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.023
+  category: entry
+  title_en: Counter-entry after the daily range is exhausted. If gold has already
+    moved 150% of its average daily range (ADR), a counter-entry is justified on the
+    first intraday reversal candle.
+  title_ar: 'الدخول: Counter-entry after the daily range is exhausted. If gold has
+    already moved 150% of its average daily range (ADR), a counter-entry is justified
+    on the first intraday reversal candle.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.024
+  category: entry
+  title_en: Split-order entry. Split the entry into two clips (a market order and
+    a pending order 20 points away) instead of missing the move or putting full size
+    on one price.
+  title_ar: 'الدخول: Split-order entry. Split the entry into two clips (a market order
+    and a pending order 20 points away) instead of missing the move or putting full
+    size on one price.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.025
+  category: entry
+  title_en: Buy the broken prior high that has flipped to support. The classic role-reversal
+    rule is used only if the reaction is fast and the rejection candle is clear.
+  title_ar: 'الدخول: Buy the broken prior high that has flipped to support. The classic
+    role-reversal rule is used only if the reaction is fast and the rejection candle
+    is clear.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.026
+  category: stop
+  title_en: The stop is not the support line. Placing the stop directly under classic
+    support or a classic low is a serious error. That zone is where market makers
+    prefer to run liquidity.
+  title_ar: 'وقف الخسارة: The stop is not the support line. Placing the stop directly
+    under classic support or a classic low is a serious error. That zone is where
+    market makers prefer to run liquidity.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.027
+  category: stop
+  title_en: A hit stop can become the next entry. If the stop is tagged by a wick
+    and price quickly closes back inside the range, the old stop level is itself the
+    better new entry.
+  title_ar: 'وقف الخسارة: A hit stop can become the next entry. If the stop is tagged
+    by a wick and price quickly closes back inside the range, the old stop level is
+    itself the better new entry.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.028
+  category: stop
+  title_en: Mandatory buffer zone. Always add a protection margin under lows of at
+    least 25 to 40 gold points, to absorb random noise.
+  title_ar: 'وقف الخسارة: Mandatory buffer zone. Always add a protection margin under
+    lows of at least 25 to 40 gold points, to absorb random noise.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.029
+  category: stop
+  title_en: ATR-based stop. Stop distance must be a multiple of true volatility (the
+    source left the example multiple blank), not a fixed point count.
+  title_ar: 'وقف الخسارة: ATR-based stop. Stop distance must be a multiple of true
+    volatility (the source left the example multiple blank), not a fixed point count.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.030
+  category: stop
+  title_en: Stop beyond the explosive candle. On sells, place the stop above the wick
+    of the candle that caused the break, not above a distant historical high.
+  title_ar: 'وقف الخسارة: Stop beyond the explosive candle. On sells, place the stop
+    above the wick of the candle that caused the break, not above a distant historical
+    high.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.031
+  category: stop
+  title_en: Structural stop, not a point stop. A fixed stop (for example “always 30
+    points”) is abolished. The stop sits at the price that invalidates the technical
+    idea completely.
+  title_ar: 'وقف الخسارة: Structural stop, not a point stop. A fixed stop (for example
+    “always 30 points”) is abolished. The stop sits at the price that invalidates
+    the technical idea completely.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.032
+  category: stop
+  title_en: Do not park the stop on round numbers. Market makers target clean numbers.
+    Place the stop on awkward fractions (for example 2447.80 instead of 2450.00).
+  title_ar: 'وقف الخسارة: Do not park the stop on round numbers. Market makers target
+    clean numbers. Place the stop on awkward fractions (for example 2447.80 instead
+    of 2450.00).'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.033
+  category: stop
+  title_en: Stop on a dynamic trendline. On some trades, a candle close through the
+    trendline is the stop criterion, not a fixed numeric price.
+  title_ar: 'وقف الخسارة: Stop on a dynamic trendline. On some trades, a candle close
+    through the trendline is the stop criterion, not a fixed numeric price.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.034
+  category: stop
+  title_en: Tighten the stop when a confirmation candle prints. Once price launches
+    and prints a momentum candle in the trade direction, pull the stop immediately
+    behind that candle’s low to cut risk.
+  title_ar: 'وقف الخسارة: Tighten the stop when a confirmation candle prints. Once
+    price launches and prints a momentum candle in the trade direction, pull the stop
+    immediately behind that candle’s low to cut risk.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.035
+  category: stop
+  title_en: Moving the stop backward is forbidden. Under no circumstance may the stop
+    be widened after entry to accept a larger loss than planned.
+  title_ar: 'وقف الخسارة: Moving the stop backward is forbidden. Under no circumstance
+    may the stop be widened after entry to accept a larger loss than planned.'
+  type: guardrail
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.036
+  category: stop
+  title_en: Time stop. If gold opens a trade and chops in a dead range for more than
+    3 hours without launching, close the contract or tighten the stop in case of a
+    reversal spike.
+  title_ar: 'وقف الخسارة: Time stop. If gold opens a trade and chops in a dead range
+    for more than 3 hours without launching, close the contract or tighten the stop
+    in case of a reversal spike.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.037
+  category: stop
+  title_en: Stop behind a liquidity pool. Place the stop a safe distance behind equal
+    lows. Those lows attract candle wicks.
+  title_ar: 'وقف الخسارة: Stop behind a liquidity pool. Place the stop a safe distance
+    behind equal lows. Those lows attract candle wicks.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.038
+  category: stop
+  title_en: Breakeven rule. Move the stop to entry only after price has traveled a
+    distance equal to the stop itself and a new low has formed on M15. (The source
+    had an empty parenthesis after “the stop itself.”)
+  title_ar: 'وقف الخسارة: Breakeven rule. Move the stop to entry only after price
+    has traveled a distance equal to the stop itself and a new low has formed on M15.
+    (The source had an empty parenthesis after “the stop itself.”)'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.039
+  category: stop
+  title_en: Protect profit near the high. If the trade has reached 70% of the target,
+    place a profit-protection stop at 50% of the move so the market cannot turn a
+    winner into a loser.
+  title_ar: 'وقف الخسارة: Protect profit near the high. If the trade has reached 70%
+    of the target, place a profit-protection stop at 50% of the move so the market
+    cannot turn a winner into a loser.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.040
+  category: stop
+  title_en: Order-block buffer. Place the stop 15 points beyond the end of the institutional
+    order block, not exactly on it.
+  title_ar: 'وقف الخسارة: Order-block buffer. Place the stop 15 points beyond the
+    end of the institutional order block, not exactly on it.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.041
+  category: stop
+  title_en: Separate the sell stop from the spread. On sells, add the spread width
+    at the time of exit to the stop distance, so a phantom spread does not knock the
+    trade out.
+  title_ar: 'وقف الخسارة: Separate the sell stop from the spread. On sells, add the
+    spread width at the time of exit to the stop distance, so a phantom spread does
+    not knock the trade out.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.042
+  category: stop
+  title_en: Dynamic chandelier exit. Use the highest high of the last 10 candles minus
+    an ATR multiple as a trailing stop that follows price.
+  title_ar: 'وقف الخسارة: Dynamic chandelier exit. Use the highest high of the last
+    10 candles minus an ATR multiple as a trailing stop that follows price.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.043
+  category: stop
+  title_en: Stop behind the Asian high. If gold is sold after an Asian-session liquidity
+    sweep, place the stop 10 points above the highest wick of the sweep candle.
+  title_ar: 'وقف الخسارة: Stop behind the Asian high. If gold is sold after an Asian-session
+    liquidity sweep, place the stop 10 points above the highest wick of the sweep
+    candle.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.044
+  category: stop
+  title_en: Do not place the stop inside open gaps. Never put a stop in the middle
+    of an open FVG. Price will return to fill it.
+  title_ar: 'وقف الخسارة: Do not place the stop inside open gaps. Never put a stop
+    in the middle of an open FVG. Price will return to fill it.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.045
+  category: stop
+  title_en: Intraday momentum-break stop. Exit if two consecutive candles close against
+    the trade on M5 with rising momentum, even before the original stop is hit.
+  title_ar: 'وقف الخسارة: Intraday momentum-break stop. Exit if two consecutive candles
+    close against the trade on M5 with rising momentum, even before the original stop
+    is hit.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.046
+  category: stop
+  title_en: Do not move to breakeven too early. Moving the stop to entry before a
+    minor swing high is cleared gets the trade tagged by noise before the move to
+    target.
+  title_ar: 'وقف الخسارة: Do not move to breakeven too early. Moving the stop to entry
+    before a minor swing high is cleared gets the trade tagged by noise before the
+    move to target.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.047
+  category: stop
+  title_en: Portfolio-percent stop. The distance from entry to stop must equal exactly
+    1% or 2% of equity in code, by adjusting lot size.
+  title_ar: 'وقف الخسارة: Portfolio-percent stop. The distance from entry to stop
+    must equal exactly 1% or 2% of equity in code, by adjusting lot size.'
+  type: guardrail
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.048
+  category: stop
+  title_en: Close-based reference stop. In some cases the stop is programmed as “an
+    hourly candle close below the level,” not a fast wick touch.
+  title_ar: 'وقف الخسارة: Close-based reference stop. In some cases the stop is programmed
+    as “an hourly candle close below the level,” not a fast wick touch.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.049
+  category: stop
+  title_en: Protect trades into news. Five minutes before a hot release, the stop
+    must sit in an area clear of liquidity gaps, to reduce slippage.
+  title_ar: 'وقف الخسارة: Protect trades into news. Five minutes before a hot release,
+    the stop must sit in an area clear of liquidity gaps, to reduce slippage.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.050
+  category: stop
+  title_en: Split stops on split contracts. When entering with two contracts, the
+    first stop can be tight and the second can sit behind the larger structural low,
+    to spread risk.
+  title_ar: 'وقف الخسارة: Split stops on split contracts. When entering with two contracts,
+    the first stop can be tight and the second can sit behind the larger structural
+    low, to spread risk.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.051
+  category: stop
+  title_en: Stop on a channel midline break. Inside a price channel, a break of the
+    equidistant median is an early stop, before the channel extreme.
+  title_ar: 'وقف الخسارة: Stop on a channel midline break. Inside a price channel,
+    a break of the equidistant median is an early stop, before the channel extreme.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.052
+  category: stop
+  title_en: Overnight safety stop. Before the rollover, widen the stop by an extra
+    20 points to absorb the temporary spread expansion.
+  title_ar: 'وقف الخسارة: Overnight safety stop. Before the rollover, widen the stop
+    by an extra 20 points to absorb the temporary spread expansion.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.053
+  category: stop
+  title_en: Stop behind an inverted hammer (shooting star). On a sell, place the stop
+    10 points above the highest point of the shooting-star wick.
+  title_ar: 'وقف الخسارة: Stop behind an inverted hammer (shooting star). On a sell,
+    place the stop 10 points above the highest point of the shooting-star wick.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.054
+  category: stop
+  title_en: Stop based on supply/demand balance. On a buy, place the stop under the
+    demand zone that absorbed the last full downswing.
+  title_ar: 'وقف الخسارة: Stop based on supply/demand balance. On a buy, place the
+    stop under the demand zone that absorbed the last full downswing.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.055
+  category: stop
+  title_en: Protective exit on an opposite pattern. Cancel the trade and hit the stop
+    manually if a clear head-and-shoulders reversal forms on H1.
+  title_ar: 'وقف الخسارة: Protective exit on an opposite pattern. Cancel the trade
+    and hit the stop manually if a clear head-and-shoulders reversal forms on H1.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.056
+  category: retest
+  title_en: A retest is not mandatory. In genuine gold explosions, price runs away
+    with no retest of the broken level. Waiting misses the trade.
+  title_ar: 'إعادة الاختبار: A retest is not mandatory. In genuine gold explosions,
+    price runs away with no retest of the broken level. Waiting misses the trade.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.057
+  category: retest
+  title_en: A retest can be evidence of reversal. If price drifts slowly and hesitantly
+    back to the broken level and bearish candles start to dominate, this is often
+    not a retest. It is a failed break and a real reversal.
+  title_ar: 'إعادة الاختبار: A retest can be evidence of reversal. If price drifts
+    slowly and hesitantly back to the broken level and bearish candles start to dominate,
+    this is often not a retest. It is a failed break and a real reversal.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.058
+  category: retest
+  title_en: Deep retest. Gold often pushes back through a broken resistance to retest
+    deeper demand underneath before rallying.
+  title_ar: 'إعادة الاختبار: Deep retest. Gold often pushes back through a broken
+    resistance to retest deeper demand underneath before rallying.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.059
+  category: retest
+  title_en: Speed of the test candle. A successful retest candle must be fast and
+    rejected with a long wick. Full-bodied candles that settle on the level mean the
+    breakout failed.
+  title_ar: 'إعادة الاختبار: Speed of the test candle. A successful retest candle
+    must be fast and rejected with a long wick. Full-bodied candles that settle on
+    the level mean the breakout failed.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.060
+  category: retest
+  title_en: Retest the trendline, not the horizontal line. Price may ignore the horizontal
+    level and retest a previously broken sloping trendline, then launch from it.
+  title_ar: 'إعادة الاختبار: Retest the trendline, not the horizontal line. Price
+    may ignore the horizontal level and retest a previously broken sloping trendline,
+    then launch from it.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.061
+  category: retest
+  title_en: Fake retest used to grab liquidity. A return to the broken zone may exist
+    only to trigger traders’ pending buy orders, then dump hard and trap them.
+  title_ar: 'إعادة الاختبار: Fake retest used to grab liquidity. A return to the broken
+    zone may exist only to trigger traders’ pending buy orders, then dump hard and
+    trap them.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.062
+  category: retest
+  title_en: A failed retest is a sell. When price fails to bounce from the retest
+    level and trades back through it, flip immediately to a sell with the new direction.
+  title_ar: 'إعادة الاختبار: A failed retest is a sell. When price fails to bounce
+    from the retest level and trades back through it, flip immediately to a sell with
+    the new direction.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.063
+  category: retest
+  title_en: Retest on a smaller timeframe. What looks like a straight breakout on
+    H1 often contains a complete, clean retest on M1 or M5.
+  title_ar: 'إعادة الاختبار: Retest on a smaller timeframe. What looks like a straight
+    breakout on H1 often contains a complete, clean retest on M1 or M5.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.064
+  category: retest
+  title_en: Volume effect on the test. A retest on weak tick volume is the safer and
+    more credible continuation.
+  title_ar: 'إعادة الاختبار: Volume effect on the test. A retest on weak tick volume
+    is the safer and more credible continuation.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.065
+  category: retest
+  title_en: Fibonacci retest. Gold prefers to retest the 61.8% Fibonacci of the broken
+    wave rather than the zero point of the break.
+  title_ar: 'إعادة الاختبار: Fibonacci retest. Gold prefers to retest the 61.8% Fibonacci
+    of the broken wave rather than the zero point of the break.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.066
+  category: retest
+  title_en: Right-shoulder test. In head-and-shoulders patterns, price may never retest
+    the neckline. It may simply fall after the right shoulder forms.
+  title_ar: 'إعادة الاختبار: Right-shoulder test. In head-and-shoulders patterns,
+    price may never retest the neckline. It may simply fall after the right shoulder
+    forms.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.067
+  category: retest
+  title_en: Repeated retests weaken the level. Three returns to the same level do
+    not prove strength. They show buy orders being consumed and a break getting closer.
+  title_ar: 'إعادة الاختبار: Repeated retests weaken the level. Three returns to the
+    same level do not prove strength. They show buy orders being consumed and a break
+    getting closer.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.068
+  category: retest
+  title_en: Time-conditioned retest. If the breakout candle took one minute and the
+    retest candle took 30 minutes of hesitant decline, that is a healthy pullback.
+  title_ar: 'إعادة الاختبار: Time-conditioned retest. If the breakout candle took
+    one minute and the retest candle took 30 minutes of hesitant decline, that is
+    a healthy pullback.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.069
+  category: retest
+  title_en: Retest zones, not lines. Treat retest levels as a price band of 15 to
+    30 points, not a single number.
+  title_ar: 'إعادة الاختبار: Retest zones, not lines. Treat retest levels as a price
+    band of 15 to 30 points, not a single number.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.070
+  category: retest
+  title_en: Weekly opening-gap retest. Gaps left at the Monday open are later retest
+    targets that tend to be filled during the week.
+  title_ar: 'إعادة الاختبار: Weekly opening-gap retest. Gaps left at the Monday open
+    are later retest targets that tend to be filled during the week.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.071
+  category: retest
+  title_en: Runaway breakout with no test. If the breakout is accompanied by a strong
+    opposite move in DXY, gold will fall with no retest of the highs.
+  title_ar: 'إعادة الاختبار: Runaway breakout with no test. If the breakout is accompanied
+    by a strong opposite move in DXY, gold will fall with no retest of the highs.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.072
+  category: retest
+  title_en: Confirm the retest with reversal candles. Do not enter a retest just because
+    price touched the level. Require an M15 pin bar or engulfing candle that confirms
+    rejection.
+  title_ar: 'إعادة الاختبار: Confirm the retest with reversal candles. Do not enter
+    a retest just because price touched the level. Require an M15 pin bar or engulfing
+    candle that confirms rejection.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.073
+  category: retest
+  title_en: Retest of a broken Asian low. When gold breaks the Asian-session low at
+    the London open, the maximum bounce is a tag of that same low before the sharp
+    decline.
+  title_ar: 'إعادة الاختبار: Retest of a broken Asian low. When gold breaks the Asian-session
+    low at the London open, the maximum bounce is a tag of that same low before the
+    sharp decline.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.074
+  category: retest
+  title_en: Mid-air retest. Price may turn 20 points before the broken support and
+    only test the nearest moving average.
+  title_ar: 'إعادة الاختبار: Mid-air retest. Price may turn 20 points before the broken
+    support and only test the nearest moving average.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.075
+  category: retest
+  title_en: Retest of parallel trendlines. After a descending channel breaks, price
+    often retests the channel’s outer ceiling as new support.
+  title_ar: 'إعادة الاختبار: Retest of parallel trendlines. After a descending channel
+    breaks, price often retests the channel’s outer ceiling as new support.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.076
+  category: retest
+  title_en: Psychological-level retest. Holding above a level such as 2400.00 after
+    clearing it is stronger confirmation than retesting a random high.
+  title_ar: 'إعادة الاختبار: Psychological-level retest. Holding above a level such
+    as 2400.00 after clearing it is stronger confirmation than retesting a random
+    high.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.077
+  category: retest
+  title_en: Retest after a storm news release. News shocks leave violent break levels.
+    Those levels are often retested calmly after the session ends.
+  title_ar: 'إعادة الاختبار: Retest after a storm news release. News shocks leave
+    violent break levels. Those levels are often retested calmly after the session
+    ends.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.078
+  category: retest
+  title_en: All-time-high retest. When gold prints a new all-time high, the retest
+    may be a long sideways range rather than a sharp drop.
+  title_ar: 'إعادة الاختبار: All-time-high retest. When gold prints a new all-time
+    high, the retest may be a long sideways range rather than a sharp drop.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.079
+  category: retest
+  title_en: Failed test in exhaustion zones. If RSI is deeply oversold on H4, any
+    retest of a broken resistance will turn into a buy explosion.
+  title_ar: 'إعادة الاختبار: Failed test in exhaustion zones. If RSI is deeply oversold
+    on H4, any retest of a broken resistance will turn into a buy explosion.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.080
+  category: retest
+  title_en: Cancel the retest idea when the range is too wide. If the retest decline
+    exceeds 78.6% of the breakout leg, cancel the scenario. The break was fully false.
+  title_ar: 'إعادة الاختبار: Cancel the retest idea when the range is too wide. If
+    the retest decline exceeds 78.6% of the breakout leg, cancel the scenario. The
+    break was fully false.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.081
+  category: trend
+  title_en: Multiple trendlines on the same chart. An inner steep trendline and an
+    outer primary trendline can both be drawn on the same candles. Entry starts from
+    the inner line.
+  title_ar: 'خطوط الاتجاه: Multiple trendlines on the same chart. An inner steep trendline
+    and an outer primary trendline can both be drawn on the same candles. Entry starts
+    from the inner line.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.082
+  category: trend
+  title_en: A trendline is a zone, not a hairline. Draw it as a price band that contains
+    both wicks and bodies, so gold’s momentary wick pierces are absorbed.
+  title_ar: 'خطوط الاتجاه: A trendline is a zone, not a hairline. Draw it as a price
+    band that contains both wicks and bodies, so gold’s momentary wick pierces are
+    absorbed.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.083
+  category: trend
+  title_en: Bounce from the trendline without touching support. Gold often ignores
+    horizontal levels completely and reverses on a touch of a rising trendline.
+  title_ar: 'خطوط الاتجاه: Bounce from the trendline without touching support. Gold
+    often ignores horizontal levels completely and reverses on a touch of a rising
+    trendline.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.084
+  category: trend
+  title_en: Third-touch rule. The third touch of a trendline is the strongest and
+    the highest-probability quick profit. The fourth and fifth touches carry a high
+    break risk.
+  title_ar: 'خطوط الاتجاه: Third-touch rule. The third touch of a trendline is the
+    strongest and the highest-probability quick profit. The fourth and fifth touches
+    carry a high break risk.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.085
+  category: trend
+  title_en: A trendline break is not automatically a reversal. A break of gold’s rising
+    trendline often produces a sideways accumulation path, not necessarily a sharp
+    decline.
+  title_ar: 'خطوط الاتجاه: A trendline break is not automatically a reversal. A break
+    of gold’s rising trendline often produces a sideways accumulation path, not necessarily
+    a sharp decline.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.086
+  category: trend
+  title_en: Adjusted trendlines. If a wick pierces the trendline and the candle closes
+    back above it, redraw the line to include that wick as the new slope.
+  title_ar: 'خطوط الاتجاه: Adjusted trendlines. If a wick pierces the trendline and
+    the candle closes back above it, redraw the line to include that wick as the new
+    slope.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.087
+  category: trend
+  title_en: Parallel twin trendline. A line parallel to the trendline across the opposite
+    swings creates a channel. A tag of the channel ceiling is a mandatory profit target.
+  title_ar: 'خطوط الاتجاه: Parallel twin trendline. A line parallel to the trendline
+    across the opposite swings creates a channel. A tag of the channel ceiling is
+    a mandatory profit target.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.088
+  category: trend
+  title_en: Accelerating departure from a flat trendline. Price racing away from the
+    trendline at a right angle signals a nearby explosion that ends with a collapse
+    back toward the line.
+  title_ar: 'خطوط الاتجاه: Accelerating departure from a flat trendline. Price racing
+    away from the trendline at a right angle signals a nearby explosion that ends
+    with a collapse back toward the line.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.089
+  category: trend
+  title_en: Minor trendline break as confirmation. Do not buy a horizontal support
+    touch until the small descending trendline breaks on the 5-minute chart.
+  title_ar: 'خطوط الاتجاه: Minor trendline break as confirmation. Do not buy a horizontal
+    support touch until the small descending trendline breaks on the 5-minute chart.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.090
+  category: trend
+  title_en: The market-maker’s fake trendline. Trendlines that are obvious to beginners
+    are drawn so they can be broken and the stops parked just behind them can be taken.
+  title_ar: 'خطوط الاتجاه: The market-maker’s fake trendline. Trendlines that are
+    obvious to beginners are drawn so they can be broken and the stops parked just
+    behind them can be taken.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.091
+  category: trend
+  title_en: Counter-trendlines. Scalp entries are built on breaks of trendlines that
+    run against the day’s main path.
+  title_ar: 'خطوط الاتجاه: Counter-trendlines. Scalp entries are built on breaks of
+    trendlines that run against the day’s main path.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.092
+  category: trend
+  title_en: Channel median. The midline acts as a price magnet. A bounce from it confirms
+    trend strength and a run to the opposite side.
+  title_ar: 'خطوط الاتجاه: Channel median. The midline acts as a price magnet. A bounce
+    from it confirms trend strength and a run to the opposite side.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.093
+  category: trend
+  title_en: Trendline crossing a horizontal level. The mathematical intersection of
+    a sloping trendline and horizontal support is the highest-probability entry (confluence
+    zone).
+  title_ar: 'خطوط الاتجاه: Trendline crossing a horizontal level. The mathematical
+    intersection of a sloping trendline and horizontal support is the highest-probability
+    entry (confluence zone).'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.094
+  category: trend
+  title_en: Break and retest of the trendline. After a rising trendline breaks, the
+    entry is the later tag of that line from below, now acting as resistance.
+  title_ar: 'خطوط الاتجاه: Break and retest of the trendline. After a rising trendline
+    breaks, the entry is the later tag of that line from below, now acting as resistance.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.095
+  category: trend
+  title_en: Wicks versus bodies. On gold, trendlines drawn on body closes are more
+    honest about a real break than lines drawn on random wicks.
+  title_ar: 'خطوط الاتجاه: Wicks versus bodies. On gold, trendlines drawn on body
+    closes are more honest about a real break than lines drawn on random wicks.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.096
+  category: trend
+  title_en: Speed resistance fan. Draw three trendlines at different angles. A break
+    of the first warns of a drop to the second. A break of the second targets the
+    third.
+  title_ar: 'خطوط الاتجاه: Speed resistance fan. Draw three trendlines at different
+    angles. A break of the first warns of a drop to the second. A break of the second
+    targets the third.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.097
+  category: trend
+  title_en: RSI trendline. Draw trendlines on RSI. A break of the indicator’s trendline
+    leads the actual price trendline break by two to three candles.
+  title_ar: 'خطوط الاتجاه: RSI trendline. Draw trendlines on RSI. A break of the indicator’s
+    trendline leads the actual price trendline break by two to three candles.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.098
+  category: trend
+  title_en: Higher-timeframe trendlines. A trendline drawn on D1 remains a hard barrier.
+    It is not easily crossed except by a violent macro release.
+  title_ar: 'خطوط الاتجاه: Higher-timeframe trendlines. A trendline drawn on D1 remains
+    a hard barrier. It is not easily crossed except by a violent macro release.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.099
+  category: trend
+  title_en: Price diverging away from the trendline. A very large distance above a
+    rising trendline bans immediate buying until price breathes back toward the line.
+  title_ar: 'خطوط الاتجاه: Price diverging away from the trendline. A very large distance
+    above a rising trendline bans immediate buying until price breathes back toward
+    the line.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.100
+  category: trend
+  title_en: Break of a double-top trendline. A break of the trendline connecting the
+    two troughs of a double top activates the sell even before the neckline breaks.
+  title_ar: 'خطوط الاتجاه: Break of a double-top trendline. A break of the trendline
+    connecting the two troughs of a double top activates the sell even before the
+    neckline breaks.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.101
+  category: trend
+  title_en: A broken trendline reverses its job. A rising trendline broken with force
+    later becomes a resistance ceiling that rejects new rally attempts.
+  title_ar: 'خطوط الاتجاه: A broken trendline reverses its job. A rising trendline
+    broken with force later becomes a resistance ceiling that rejects new rally attempts.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.102
+  category: trend
+  title_en: Symmetrical-triangle trendlines. A narrowing gap between the rising and
+    falling trendlines inside a triangle warns of an explosion whose direction is
+    the side that breaks.
+  title_ar: 'خطوط الاتجاه: Symmetrical-triangle trendlines. A narrowing gap between
+    the rising and falling trendlines inside a triangle warns of an explosion whose
+    direction is the side that breaks.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.103
+  category: trend
+  title_en: Trendlines as moving targets. On a buy, the upper descending trendline
+    can be the moving profit target as time passes.
+  title_ar: 'خطوط الاتجاه: Trendlines as moving targets. On a buy, the upper descending
+    trendline can be the moving profit target as time passes.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.104
+  category: trend
+  title_en: Trendline break on a doji. A break by weak doji candles is a false break
+    caused by missing liquidity, not a real shift in control.
+  title_ar: 'خطوط الاتجاه: Trendline break on a doji. A break by weak doji candles
+    is a false break caused by missing liquidity, not a real shift in control.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.105
+  category: trend
+  title_en: Trendline aligned with the session. A touch of a rising trendline in the
+    first minute of the London open gives the trade maximum thrust.
+  title_ar: 'خطوط الاتجاه: Trendline aligned with the session. A touch of a rising
+    trendline in the first minute of the London open gives the trade maximum thrust.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.106
+  category: gold
+  title_en: Asian-range liquidity sweep. On about 80% of days, gold at the London
+    open breaks the Asian high or Asian low to grab liquidity, then reverses completely.
+  title_ar: 'سلوك الذهب: Asian-range liquidity sweep. On about 80% of days, gold at
+    the London open breaks the Asian high or Asian low to grab liquidity, then reverses
+    completely.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.107
+  category: gold
+  title_en: Gold does not forgive a late stop. Once the reversal starts, a 20-point
+    loss is better than waiting. Gold can travel 300 points without pausing.
+  title_ar: 'سلوك الذهب: Gold does not forgive a late stop. Once the reversal starts,
+    a 20-point loss is better than waiting. Gold can travel 300 points without pausing.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.108
+  category: gold
+  title_en: Major psychological-number traps. Around levels such as 2400.00, gold
+    repeatedly fakes breaks by 50 to 80 points to flush retail contracts before the
+    real move.
+  title_ar: 'سلوك الذهب: Major psychological-number traps. Around levels such as 2400.00,
+    gold repeatedly fakes breaks by 50 to 80 points to flush retail contracts before
+    the real move.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.109
+  category: gold
+  title_en: The 3:30 p.m. Mecca-time candle (New York open). This candle often erases
+    everything London built, in minutes. Close or fully protect intraday contracts
+    before it.
+  title_ar: 'سلوك الذهب: The 3:30 p.m. Mecca-time candle (New York open). This candle
+    often erases everything London built, in minutes. Close or fully protect intraday
+    contracts before it.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.110
+  category: gold
+  title_en: Gold is a fear haven, not an intraday inflation trade. In moments of urgent
+    military tension, technical analysis is suspended. Gold is bought as a fact, driven
+    by institutional market orders.
+  title_ar: 'سلوك الذهب: Gold is a fear haven, not an intraday inflation trade. In
+    moments of urgent military tension, technical analysis is suspended. Gold is bought
+    as a fact, driven by institutional market orders.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.111
+  category: gold
+  title_en: Temporary decoupling from DXY. Gold can rise with the dollar during severe
+    banking panic. Do not treat the inverse relationship as a 100% sacred rule.
+  title_ar: 'سلوك الذهب: Temporary decoupling from DXY. Gold can rise with the dollar
+    during severe banking panic. Do not treat the inverse relationship as a 100% sacred
+    rule.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.112
+  category: gold
+  title_en: Gold’s normal volatility (gold ATR). Gold’s natural daily range is about
+    250 to 400 points. A move under 150 points means the market has not started its
+    explosion.
+  title_ar: 'سلوك الذهب: Gold’s normal volatility (gold ATR). Gold’s natural daily
+    range is about 250 to 400 points. A move under 150 points means the market has
+    not started its explosion.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.113
+  category: gold
+  title_en: News-wick trap. The first move in the 5 seconds after CPI or a rate decision
+    is often a reverse trap that swallows liquidity before the real direction.
+  title_ar: 'سلوك الذهب: News-wick trap. The first move in the 5 seconds after CPI
+    or a rate decision is often a reverse trap that swallows liquidity before the
+    real direction.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.114
+  category: gold
+  title_en: Equal highs and equal lows are targets. Gold does not leave equal highs
+    or equal lows without returning to break them and run the stops behind them, even
+    days later.
+  title_ar: 'سلوك الذهب: Equal highs and equal lows are targets. Gold does not leave
+    equal highs or equal lows without returning to break them and run the stops behind
+    them, even days later.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.115
+  category: gold
+  title_en: Sharp liquidity void. Very long candles left during news are attraction
+    zones. Price later returns to fill at least 50% of them.
+  title_ar: 'سلوك الذهب: Sharp liquidity void. Very long candles left during news
+    are attraction zones. Price later returns to fill at least 50% of them.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.116
+  category: gold
+  title_en: Gold likes the 78.6% Fibonacci retracement. Unlike currencies that often
+    stop at 50% or 61.8%, gold prefers very deep pullbacks that hit the largest number
+    of stops before launching.
+  title_ar: 'سلوك الذهب: Gold likes the 78.6% Fibonacci retracement. Unlike currencies
+    that often stop at 50% or 61.8%, gold prefers very deep pullbacks that hit the
+    largest number of stops before launching.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.117
+  category: gold
+  title_en: Daily fixing flow. From 6:00 to 7:00 p.m. London time, spot gold is fixed
+    and sudden contract liquidations occur. (Translated as written.)
+  title_ar: 'سلوك الذهب: Daily fixing flow. From 6:00 to 7:00 p.m. London time, spot
+    gold is fixed and sudden contract liquidations occur. (Translated as written.)'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.118
+  category: gold
+  title_en: The midnight spread trap. From 11:55 p.m. to 12:15 a.m. platform time,
+    gold’s spread widens violently. Do not trade, and do not use tight stops, in that
+    window.
+  title_ar: 'سلوك الذهب: The midnight spread trap. From 11:55 p.m. to 12:15 a.m. platform
+    time, gold’s spread widens violently. Do not trade, and do not use tight stops,
+    in that window.'
+  type: guardrail
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.119
+  category: gold
+  title_en: A real support break becomes a vertical dump. If gold breaks genuine support
+    and holds below it with two H1 candles, it does not correct. It collapses vertically
+    toward the next historical support.
+  title_ar: 'سلوك الذهب: A real support break becomes a vertical dump. If gold breaks
+    genuine support and holds below it with two H1 candles, it does not correct. It
+    collapses vertically toward the next historical support.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.120
+  category: gold
+  title_en: Do not chase giant green candles. Buying after gold has already risen
+    150 points in 5 minutes is trading suicide. The correct buy is in the quiet zone
+    before the explosion.
+  title_ar: 'سلوك الذهب: Do not chase giant green candles. Buying after gold has already
+    risen 150 points in 5 minutes is trading suicide. The correct buy is in the quiet
+    zone before the explosion.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.121
+  category: gold
+  title_en: Real yields (TIPS). A sustained rise in bond yields is a standing brake
+    on gold rallies on higher timeframes.
+  title_ar: 'سلوك الذهب: Real yields (TIPS). A sustained rise in bond yields is a
+    standing brake on gold rallies on higher timeframes.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.122
+  category: gold
+  title_en: Friday behavior. Friday closes often bring profit-taking and liquidation
+    by large funds, producing strong moves against the week’s direction.
+  title_ar: 'سلوك الذهب: Friday behavior. Friday closes often bring profit-taking
+    and liquidation by large funds, producing strong moves against the week’s direction.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.123
+  category: gold
+  title_en: Monday’s first hour. The weekly open reflects holiday sentiment and often
+    fills leftover price gaps.
+  title_ar: 'سلوك الذهب: Monday’s first hour. The weekly open reflects holiday sentiment
+    and often fills leftover price gaps.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.124
+  category: gold
+  title_en: Gold invalidates oscillators in ranges. RSI or Stochastics fire repeated
+    false signals when gold is trapped in a tight 70-point range.
+  title_ar: 'سلوك الذهب: Gold invalidates oscillators in ranges. RSI or Stochastics
+    fire repeated false signals when gold is trapped in a tight 70-point range.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.125
+  category: gold
+  title_en: Safe-haven runaway. On geopolitical-panic days, every dip, however small,
+    is an immediate buy. Do not hesitate.
+  title_ar: 'سلوك الذهب: Safe-haven runaway. On geopolitical-panic days, every dip,
+    however small, is an immediate buy. Do not hesitate.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.126
+  category: gold
+  title_en: Harmonic link with silver. If silver breaks its prior high and gold has
+    not yet broken its own high, gold will catch up, and it will do so quickly (silver
+    leading).
+  title_ar: 'سلوك الذهب: Harmonic link with silver. If silver breaks its prior high
+    and gold has not yet broken its own high, gold will catch up, and it will do so
+    quickly (silver leading).'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.127
+  category: gold
+  title_en: Do not trade US bank holidays. On US holidays (for example Labor Day),
+    gold is dead and random, and the spread burns the account.
+  title_ar: 'سلوك الذهب: Do not trade US bank holidays. On US holidays (for example
+    Labor Day), gold is dead and random, and the spread burns the account.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.128
+  category: gold
+  title_en: Late New York reversal. After 8:00 p.m. Mecca time, gold often starts
+    a correction against the direction it held all day.
+  title_ar: 'سلوك الذهب: Late New York reversal. After 8:00 p.m. Mecca time, gold
+    often starts a correction against the direction it held all day.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.129
+  category: gold
+  title_en: Gold tests invisible liquidity. Prior-day closes are magnetic support
+    and resistance on gold.
+  title_ar: 'سلوك الذهب: Gold tests invisible liquidity. Prior-day closes are magnetic
+    support and resistance on gold.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.130
+  category: gold
+  title_en: A break of the 200 EMA on H4. This is the dividing line between gold’s
+    long-term uptrend and downtrend. Above it, the standing bias is buy. Below it,
+    the standing bias is sell.
+  title_ar: 'سلوك الذهب: A break of the 200 EMA on H4. This is the dividing line between
+    gold’s long-term uptrend and downtrend. Above it, the standing bias is buy. Below
+    it, the standing bias is sell.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.131
+  category: gold
+  title_en: Pre-NFP stagnation. Gold stays in a very tight range in the days before
+    the US jobs report. Trading inside it drains the account.
+  title_ar: 'سلوك الذهب: Pre-NFP stagnation. Gold stays in a very tight range in the
+    days before the US jobs report. Trading inside it drains the account.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.132
+  category: gold
+  title_en: Gold moves as a block with mining equities. The gold-miners index (GDX)
+    gives a lead on actual gold by hours.
+  title_ar: 'سلوك الذهب: Gold moves as a block with mining equities. The gold-miners
+    index (GDX) gives a lead on actual gold by hours.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.133
+  category: gold
+  title_en: Bollinger Band extreme. A gold candle that closes fully outside the outer
+    Bollinger Band on H1 warns of an immediate corrective return toward the middle
+    line.
+  title_ar: 'سلوك الذهب: Bollinger Band extreme. A gold candle that closes fully outside
+    the outer Bollinger Band on H1 warns of an immediate corrective return toward
+    the middle line.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.134
+  category: gold
+  title_en: Contract size and pricing. A one-dollar move in gold equals 100 points
+    in the point calculation. Precise risk math is what prevents a margin call on
+    a single candle.
+  title_ar: 'سلوك الذهب: Contract size and pricing. A one-dollar move in gold equals
+    100 points in the point calculation. Precise risk math is what prevents a margin
+    call on a single candle.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.135
+  category: gold
+  title_en: Quiet rallies, violent declines. Gold rallies often take days of slow
+    grind. Profit-taking and declines happen in a few hours, with giant engulfing
+    candles.
+  title_ar: 'سلوك الذهب: Quiet rallies, violent declines. Gold rallies often take
+    days of slow grind. Profit-taking and declines happen in a few hours, with giant
+    engulfing candles.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.136
+  category: targets
+  title_en: The target is not always support or resistance. Target one can be a sloping
+    trendline, a channel midline, or a percentage distance measured by ATR.
+  title_ar: 'الأهداف: The target is not always support or resistance. Target one can
+    be a sloping trendline, a channel midline, or a percentage distance measured by
+    ATR.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.137
+  category: targets
+  title_en: Mandatory partial close. Take 50% of the contract’s profit as soon as
+    price travels a distance equal to the stop, and move the stop to entry immediately.
+  title_ar: 'الأهداف: Mandatory partial close. Take 50% of the contract’s profit as
+    soon as price travels a distance equal to the stop, and move the stop to entry
+    immediately.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.138
+  category: targets
+  title_en: Open targets at historical extremes. When gold prints a new all-time high
+    and prior resistance does not exist, set targets with Fibonacci extensions (1.272
+    and 1.618).
+  title_ar: 'الأهداف: Open targets at historical extremes. When gold prints a new
+    all-time high and prior resistance does not exist, set targets with Fibonacci
+    extensions (1.272 and 1.618).'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.139
+  category: targets
+  title_en: Exit before the psychological level, with a safety margin. If resistance
+    is 2500.00, place take-profit at 2496.00 so price does not turn before the round
+    number.
+  title_ar: 'الأهداف: Exit before the psychological level, with a safety margin. If
+    resistance is 2500.00, place take-profit at 2496.00 so price does not turn before
+    the round number.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.140
+  category: targets
+  title_en: Time exit before the session close. Close open intraday trades one hour
+    before the New York close, whether or not the final target was reached.
+  title_ar: 'الأهداف: Time exit before the session close. Close open intraday trades
+    one hour before the New York close, whether or not the final target was reached.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.141
+  category: targets
+  title_en: Prior-day extremes as targets. Yesterday’s high and yesterday’s low are
+    the most accurate and reliable daily targets on gold.
+  title_ar: 'الأهداف: Prior-day extremes as targets. Yesterday’s high and yesterday’s
+    low are the most accurate and reliable daily targets on gold.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.142
+  category: targets
+  title_en: Extend the target on engulfing momentum. If price reaches target one on
+    a giant full marubozu, do not close. Extend the target to the next level. Momentum
+    is exceptional.
+  title_ar: 'الأهداف: Extend the target on engulfing momentum. If price reaches target
+    one on a giant full marubozu, do not close. Extend the target to the next level.
+    Momentum is exceptional.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.143
+  category: targets
+  title_en: Take profit on extreme oscillator readings. Close manually if RSI exceeds
+    85 on H1, even if the technical target is farther.
+  title_ar: 'الأهداف: Take profit on extreme oscillator readings. Close manually if
+    RSI exceeds 85 on H1, even if the technical target is farther.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.144
+  category: targets
+  title_en: Exit on momentum exhaustion. If price needs 10 candles to travel a distance
+    it previously covered in one candle, close the profit immediately.
+  title_ar: 'الأهداف: Exit on momentum exhaustion. If price needs 10 candles to travel
+    a distance it previously covered in one candle, close the profit immediately.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.145
+  category: targets
+  title_en: Target the first opposing liquidity gap. On buys, the first bearish FVG
+    in the path is a primary exit. It will stall the rally.
+  title_ar: 'الأهداف: Target the first opposing liquidity gap. On buys, the first
+    bearish FVG in the path is a primary exit. It will stall the rally.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.146
+  category: targets
+  title_en: Do not demand the entire wave. Take 70% to 80% of the expected range and
+    leave the rest. Wave endings reverse sharply.
+  title_ar: 'الأهداف: Do not demand the entire wave. Take 70% to 80% of the expected
+    range and leave the rest. Wave endings reverse sharply.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.147
+  category: targets
+  title_en: Lock profit after target two. When target two is hit, pull the stop behind
+    target one so that profit is already secured.
+  title_ar: 'الأهداف: Lock profit after target two. When target two is hit, pull the
+    stop behind target one so that profit is already secured.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.148
+  category: targets
+  title_en: The opposite side of the channel is the only target. A buy from the channel
+    floor targets the channel ceiling. Do not try to trade a breakout of it.
+  title_ar: 'الأهداف: The opposite side of the channel is the only target. A buy from
+    the channel floor targets the channel ceiling. Do not try to trade a breakout
+    of it.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.149
+  category: targets
+  title_en: Shrink targets before major news. If a trade is in profit 15 minutes before
+    a rate decision, close at the available profit immediately.
+  title_ar: 'الأهداف: Shrink targets before major news. If a trade is in profit 15
+    minutes before a rate decision, close at the available profit immediately.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.150
+  category: targets
+  title_en: External liquidity as the target. The logical target of a buy that launched
+    from a low is the high from which the original decline began.
+  title_ar: 'الأهداف: External liquidity as the target. The logical target of a buy
+    that launched from a low is the high from which the original decline began.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.151
+  category: targets
+  title_en: Adjust targets for the spread. On buys, the profit target must be calculated
+    so it covers the spread cost taken at the exit.
+  title_ar: 'الأهداف: Adjust targets for the spread. On buys, the profit target must
+    be calculated so it covers the spread cost taken at the exit.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.152
+  category: targets
+  title_en: Head-and-shoulders target. Measure the vertical distance from the head
+    to the neckline and project it from the break point.
+  title_ar: 'الأهداف: Head-and-shoulders target. Measure the vertical distance from
+    the head to the neckline and project it from the break point.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.153
+  category: targets
+  title_en: 'Staged scale-out. Split take-profit into three levels: 40% at target
+    one, 30% at target two, and 30% left as a runner for the larger trend.'
+  title_ar: 'الأهداف: Staged scale-out. Split take-profit into three levels: 40% at
+    target one, 30% at target two, and 30% left as a runner for the larger trend.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.154
+  category: targets
+  title_en: Exit on a reversal pattern on a smaller timeframe. If you are long on
+    H1 and a clear double top prints on M5, close immediately.
+  title_ar: 'الأهداف: Exit on a reversal pattern on a smaller timeframe. If you are
+    long on H1 and a clear double top prints on M5, close immediately.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.155
+  category: targets
+  title_en: Promote an intraday trade to a swing. If the entry is a confirmed weekly
+    low, cancel the limited daily target and trail profit on the longer horizon.
+  title_ar: 'الأهداف: Promote an intraday trade to a swing. If the entry is a confirmed
+    weekly low, cancel the limited daily target and trail profit on the longer horizon.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.156
+  category: targets
+  title_en: The 50-day average as a target. In corrective moves, the 50-day SMA is
+    a decisive target for the bounce.
+  title_ar: 'الأهداف: The 50-day average as a target. In corrective moves, the 50-day
+    SMA is a decisive target for the bounce.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.157
+  category: targets
+  title_en: Take profit before the weekend. Do not hold through Saturday and Sunday.
+    A gap open against the trade can be severe.
+  title_ar: 'الأهداف: Take profit before the weekend. Do not hold through Saturday
+    and Sunday. A gap open against the trade can be severe.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.158
+  category: targets
+  title_en: Liquidation-run target. Place the target below the cluster of buy stops,
+    to capture the full flush.
+  title_ar: 'الأهداف: Liquidation-run target. Place the target below the cluster of
+    buy stops, to capture the full flush.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.159
+  category: targets
+  title_en: Elliott proportional target. In a bullish third wave, the minimum target
+    is 1.618 times the length of wave one.
+  title_ar: 'الأهداف: Elliott proportional target. In a bullish third wave, the minimum
+    target is 1.618 times the length of wave one.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.160
+  category: targets
+  title_en: Accept available profit when structure changes. Exit at any available
+    profit as soon as the first minor M15 low breaks. Do not wait for the entry stop
+    to be hit.
+  title_ar: 'الأهداف: Accept available profit when structure changes. Exit at any
+    available profit as soon as the first minor M15 low breaks. Do not wait for the
+    entry stop to be hit.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.161
+  category: candles
+  title_en: Hammer trap. A hammer in the middle of a move, with no real liquidity
+    zone under it, is a trap that gets retail traders long before the decline.
+  title_ar: 'الشموع: Hammer trap. A hammer in the middle of a move, with no real liquidity
+    zone under it, is a trap that gets retail traders long before the decline.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.162
+  category: candles
+  title_en: Quiet-breakout deception. A resistance break on a small-bodied candle
+    does not show buyer strength. A real break needs a body that is about 80% of the
+    candle’s range.
+  title_ar: 'الشموع: Quiet-breakout deception. A resistance break on a small-bodied
+    candle does not show buyer strength. A real break needs a body that is about 80%
+    of the candle’s range.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.163
+  category: candles
+  title_en: A doji means indecision, not reversal. A doji does not require a counter-entry.
+    It means both sides are waiting for new liquidity that may continue the same trend.
+  title_ar: 'الشموع: A doji means indecision, not reversal. A doji does not require
+    a counter-entry. It means both sides are waiting for new liquidity that may continue
+    the same trend.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.164
+  category: candles
+  title_en: Failed engulfing trap. If a bearish candle engulfs the prior bullish candle,
+    then the next candle fails to continue down, that was a sell trap. Buy immediately.
+  title_ar: 'الشموع: Failed engulfing trap. If a bearish candle engulfs the prior
+    bullish candle, then the next candle fails to continue down, that was a sell trap.
+    Buy immediately.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.165
+  category: candles
+  title_en: Shooting star at an all-time high. It has the highest sell credibility
+    when the upper wick is three times the body.
+  title_ar: 'الشموع: Shooting star at an all-time high. It has the highest sell credibility
+    when the upper wick is three times the body.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.166
+  category: candles
+  title_en: Gradual engulfing (momentum shift). Candles changing from large bearish
+    bodies to tiny bearish bodies show selling exhaustion and a nearby upside explosion.
+  title_ar: 'الشموع: Gradual engulfing (momentum shift). Candles changing from large
+    bearish bodies to tiny bearish bodies show selling exhaustion and a nearby upside
+    explosion.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.167
+  category: candles
+  title_en: Multiple-high break trap. New highs by only a few points, with long wicks,
+    reflect cautious institutional distribution and warn of a nearby collapse.
+  title_ar: 'الشموع: Multiple-high break trap. New highs by only a few points, with
+    long wicks, reflect cautious institutional distribution and warn of a nearby collapse.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.168
+  category: candles
+  title_en: Inside bars. Three candles trapped inside a giant mother candle show compression
+    that is followed by an explosion in the break direction.
+  title_ar: 'الشموع: Inside bars. Three candles trapped inside a giant mother candle
+    show compression that is followed by an explosion in the break direction.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.169
+  category: candles
+  title_en: London’s first impulse-candle trap. The first 15-minute candle of the
+    London open is often a trap that points attention at a false direction.
+  title_ar: 'الشموع: London’s first impulse-candle trap. The first 15-minute candle
+    of the London open is often a trap that points attention at a false direction.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.170
+  category: candles
+  title_en: Close in the top quarter. A candle that closes in the top 25% of its range
+    confirms bull control, regardless of the lower wick.
+  title_ar: 'الشموع: Close in the top quarter. A candle that closes in the top 25%
+    of its range confirms bull control, regardless of the lower wick.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.171
+  category: candles
+  title_en: Late-entry trap behind a candle streak. Five consecutive bullish M15 candles
+    make a correction more likely than continuation. Buying is banned there.
+  title_ar: 'الشموع: Late-entry trap behind a candle streak. Five consecutive bullish
+    M15 candles make a correction more likely than continuation. Buying is banned
+    there.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.172
+  category: candles
+  title_en: Double rejection wicks. Two consecutive long wicks in the same price zone
+    confirm an institutional wall that cannot be broken for now.
+  title_ar: 'الشموع: Double rejection wicks. Two consecutive long wicks in the same
+    price zone confirm an institutional wall that cannot be broken for now.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.173
+  category: candles
+  title_en: Lower absorption candle. A strong bearish candle followed by a bullish
+    candle that fully engulfs it on the same timeframe wipes seller control and confirms
+    the rally.
+  title_ar: 'الشموع: Lower absorption candle. A strong bearish candle followed by
+    a bullish candle that fully engulfs it on the same timeframe wipes seller control
+    and confirms the rally.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.174
+  category: candles
+  title_en: False break of the prior daily low. A wick through yesterday’s low and
+    a fast close back inside yesterday’s range is the strongest bullish reversal pattern.
+  title_ar: 'الشموع: False break of the prior daily low. A wick through yesterday’s
+    low and a fast close back inside yesterday’s range is the strongest bullish reversal
+    pattern.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.175
+  category: candles
+  title_en: Wicks disappear in a strong trend. A strong trend does not carry long
+    upper and lower wicks. It is one-color candles pushing price in order.
+  title_ar: 'الشموع: Wicks disappear in a strong trend. A strong trend does not carry
+    long upper and lower wicks. It is one-color candles pushing price in order.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.176
+  category: candles
+  title_en: Range-box trap. Price leaves a sideways range in one direction to fake
+    a breakout, then reverses and breaks the opposite side completely.
+  title_ar: 'الشموع: Range-box trap. Price leaves a sideways range in one direction
+    to fake a breakout, then reverses and breaks the opposite side completely.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.177
+  category: candles
+  title_en: Selling climax. A giant bearish candle with historical volume after a
+    long decline is the end of the decline and a flush of contracts, not the start.
+  title_ar: 'الشموع: Selling climax. A giant bearish candle with historical volume
+    after a long decline is the end of the decline and a flush of contracts, not the
+    start.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.178
+  category: candles
+  title_en: Bodies tell the truth; wicks hunt liquidity. Use open and close of candle
+    bodies for the real direction. Ignore wick noise.
+  title_ar: 'الشموع: Bodies tell the truth; wicks hunt liquidity. Use open and close
+    of candle bodies for the real direction. Ignore wick noise.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.179
+  category: candles
+  title_en: Gap-fill trap. Not every gap must close immediately. Breakaway gaps from
+    a structural separation can stay open for months.
+  title_ar: 'الشموع: Gap-fill trap. Not every gap must close immediately. Breakaway
+    gaps from a structural separation can stay open for months.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.180
+  category: candles
+  title_en: Spinning tops at support. They show seller hesitation after a decline
+    and are the start of a new bullish base.
+  title_ar: 'الشموع: Spinning tops at support. They show seller hesitation after a
+    decline and are the start of a new bullish base.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.181
+  category: execution
+  title_en: Standing aside is itself a trade. When the picture is unclear and signals
+    conflict, staying a spectator is a profitable decision. It protects capital.
+  title_ar: 'التنفيذ: Standing aside is itself a trade. When the picture is unclear
+    and signals conflict, staying a spectator is a profitable decision. It protects
+    capital.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.182
+  category: execution
+  title_en: Zero-hesitation execution. Once the algorithmic conditions are met, send
+    the order immediately. Do not wait for a late human consultation.
+  title_ar: 'التنفيذ: Zero-hesitation execution. Once the algorithmic conditions are
+    met, send the order immediately. Do not wait for a late human consultation.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.183
+  category: execution
+  title_en: Auto-cancel pending orders. Any pending order (buy limit / sell limit)
+    that has not filled within 3 hours of being placed is cancelled in code. The technical
+    context has expired.
+  title_ar: 'التنفيذ: Auto-cancel pending orders. Any pending order (buy limit / sell
+    limit) that has not filled within 3 hours of being placed is cancelled in code.
+    The technical context has expired.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.184
+  category: execution
+  title_en: No double entry on the same instrument. Do not open a new gold buy if
+    a prior gold buy is still open and losing. Do not stack losses.
+  title_ar: 'التنفيذ: No double entry on the same instrument. Do not open a new gold
+    buy if a prior gold buy is still open and losing. Do not stack losses.'
+  type: guardrail
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.185
+  category: execution
+  title_en: Separate scalps from swings. Each strategy has its own magic number. Do
+    not merge an intraday stop with a longer-term stop.
+  title_ar: 'التنفيذ: Separate scalps from swings. Each strategy has its own magic
+    number. Do not merge an intraday stop with a longer-term stop.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.186
+  category: execution
+  title_en: Immediate exit on a leaked hot headline. If gold moves 80 points in one
+    minute with no technical reason and no scheduled release, close positions immediately.
+    An emergency headline may have leaked.
+  title_ar: 'التنفيذ: Immediate exit on a leaked hot headline. If gold moves 80 points
+    in one minute with no technical reason and no scheduled release, close positions
+    immediately. An emergency headline may have leaked.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.187
+  category: execution
+  title_en: Revenge trading is banned in code. Freeze the platform and block new orders
+    for 60 minutes after two consecutive losses in the same session.
+  title_ar: 'التنفيذ: Revenge trading is banned in code. Freeze the platform and block
+    new orders for 60 minutes after two consecutive losses in the same session.'
+  type: guardrail
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.188
+  category: execution
+  title_en: Dual lot-size check. The position-size calculation is reviewed twice in
+    code before send, so a decimal-point error cannot become an account disaster.
+  title_ar: 'التنفيذ: Dual lot-size check. The position-size calculation is reviewed
+    twice in code before send, so a decimal-point error cannot become an account disaster.'
+  type: guardrail
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.189
+  category: execution
+  title_en: Refresh the live feed before send. Check the latest MT5 tick. If the data
+    is older than 5 seconds, cancel execution. The connection may be down.
+  title_ar: 'التنفيذ: Refresh the live feed before send. Check the latest MT5 tick.
+    If the data is older than 5 seconds, cancel execution. The connection may be down.'
+  type: guardrail
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.190
+  category: execution
+  title_en: Flexibility when the market changes. If gold suddenly reverses and breaks
+    structure, drop the bullish bias immediately. Do not cling to the previous analysis.
+  title_ar: 'التنفيذ: Flexibility when the market changes. If gold suddenly reverses
+    and breaks structure, drop the bullish bias immediately. Do not cling to the previous
+    analysis.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.191
+  category: execution
+  title_en: Respect the daily loss cap. If the account reaches a 3% daily drawdown,
+    the agent closes every trade and disconnects until the next morning.
+  title_ar: 'التنفيذ: Respect the daily loss cap. If the account reaches a 3% daily
+    drawdown, the agent closes every trade and disconnects until the next morning.'
+  type: guardrail
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.192
+  category: execution
+  title_en: Market orders when confirmation is decisive. Use market orders rather
+    than limits when a break-and-confirm candle is seen, so the move is not missed.
+  title_ar: 'التنفيذ: Market orders when confirmation is decisive. Use market orders
+    rather than limits when a break-and-confirm candle is seen, so the move is not
+    missed.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.193
+  category: execution
+  title_en: Cancel the idea if price has already traveled half the distance to target.
+    If price runs toward the target before the pending entry fills, cancel the trade.
+    Do not chase it on the way back.
+  title_ar: 'التنفيذ: Cancel the idea if price has already traveled half the distance
+    to target. If price runs toward the target before the pending entry fills, cancel
+    the trade. Do not chase it on the way back.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.194
+  category: execution
+  title_en: Log the entry reason on the order. Write the technical code the trade
+    was built on (for example BOS_M15_FVG_Retest) in the comment field of every contract,
+    for later review.
+  title_ar: 'التنفيذ: Log the entry reason on the order. Write the technical code
+    the trade was built on (for example BOS_M15_FVG_Retest) in the comment field of
+    every contract, for later review.'
+  type: guardrail
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.195
+  category: execution
+  title_en: No new trades in the last 15 minutes before the daily close. Liquidity
+    is thin, and rollover and spread costs are high.
+  title_ar: 'التنفيذ: No new trades in the last 15 minutes before the daily close.
+    Liquidity is thin, and rollover and spread costs are high.'
+  type: guardrail
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.196
+  category: execution
+  title_en: Recalculate reward-to-risk live. If price moves one point worse than the
+    planned entry and R:R falls below 1:1.5, cancel the entry.
+  title_ar: 'التنفيذ: Recalculate reward-to-risk live. If price moves one point worse
+    than the planned entry and R:R falls below 1:1.5, cancel the entry.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.197
+  category: execution
+  title_en: No trading on official holidays. Disable the trading algorithm entirely
+    on New Year’s Day and Thanksgiving. Market makers and major central banks are
+    absent.
+  title_ar: 'التنفيذ: No trading on official holidays. Disable the trading algorithm
+    entirely on New Year’s Day and Thanksgiving. Market makers and major central banks
+    are absent.'
+  type: guardrail
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.198
+  category: execution
+  title_en: The chart must be free of contradictions. If H4 is a clear buy while M15
+    shows a completed bearish distribution pattern, entry is banned until the two
+    timeframes agree.
+  title_ar: 'التنفيذ: The chart must be free of contradictions. If H4 is a clear buy
+    while M15 shows a completed bearish distribution pattern, entry is banned until
+    the two timeframes agree.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.199
+  category: execution
+  title_en: Lot size follows closed balance, not floating equity. Increasing size
+    as the account grows is based on settled closing balance, not floating profit
+    (equity versus balance).
+  title_ar: 'التنفيذ: Lot size follows closed balance, not floating equity. Increasing
+    size as the account grows is based on settled closing balance, not floating profit
+    (equity versus balance).'
+  type: guardrail
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: field.200
+  category: execution
+  title_en: The standing golden rule. The market is always right. Technical analysis
+    is only a map of probabilities. Protecting capital comes first. Profit comes second.
+  title_ar: 'التنفيذ: The standing golden rule. The market is always right. Technical
+    analysis is only a map of probabilities. Protecting capital comes first. Profit
+    comes second.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1

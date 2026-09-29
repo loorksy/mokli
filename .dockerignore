@@ -1,0 +1,17 @@
+.git
+.venv
+**/node_modules
+**/__pycache__
+**/*.pyc
+.pytest_cache
+.mypy_cache
+.ruff_cache
+mobile
+android
+.android-sdk
+*.apk
+.env
+*.db
+.mokli
+downloads
+web/dist

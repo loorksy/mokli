@@ -1,0 +1,932 @@
+- id: news.001
+  category: pre
+  title_en: Mandatory pre-news freeze window. No new trades in the 15 minutes before
+    high-impact releases (CPI, NFP, FOMC), to avoid liquidity-sweep chaos.
+  title_ar: 'ما قبل الخبر: Mandatory pre-news freeze window. No new trades in the
+    15 minutes before high-impact releases (CPI, NFP, FOMC), to avoid liquidity-sweep
+    chaos.'
+  type: guardrail
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.002
+  category: pre
+  title_en: Cancel all pending orders. Delete every buy and sell pending order (limit
+    and stop) 10 minutes before the release, so slippage cannot activate them.
+  title_ar: 'ما قبل الخبر: Cancel all pending orders. Delete every buy and sell pending
+    order (limit and stop) 10 minutes before the release, so slippage cannot activate
+    them.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.003
+  category: pre
+  title_en: Protect open winners. Move the stop of trades already open to entry, or
+    close 70% of size, 10 minutes before pivotal data.
+  title_ar: 'ما قبل الخبر: Protect open winners. Move the stop of trades already open
+    to entry, or close 70% of size, 10 minutes before pivotal data.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.004
+  category: pre
+  title_en: Flatten trades sitting near entry. Close any trade that is not more than
+    30 gold points away from entry, so spread expansion does not hit the stop immediately.
+  title_ar: 'ما قبل الخبر: Flatten trades sitting near entry. Close any trade that
+    is not more than 30 gold points away from entry, so spread expansion does not
+    hit the stop immediately.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.005
+  category: pre
+  title_en: Watch spread expansion in advance. Measure the spread two minutes before
+    the release. If it is more than 3 times normal, arm the automatic trading lock
+    immediately.
+  title_ar: 'ما قبل الخبر: Watch spread expansion in advance. Measure the spread two
+    minutes before the release. If it is more than 3 times normal, arm the automatic
+    trading lock immediately.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.006
+  category: pre
+  title_en: Priced-in analysis. Compare the prior 4 hours of price with the consensus.
+    A sharp directional move before the release means the market has already absorbed
+    the result.
+  title_ar: 'ما قبل الخبر: Priced-in analysis. Compare the prior 4 hours of price
+    with the consensus. A sharp directional move before the release means the market
+    has already absorbed the result.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.007
+  category: pre
+  title_en: Mark the quiet pre-news range. Draw the highest high and lowest low of
+    the last 30 minutes before the release. Those become break boundaries and liquidity
+    traps.
+  title_ar: 'ما قبل الخبر: Mark the quiet pre-news range. Draw the highest high and
+    lowest low of the last 30 minutes before the release. Those become break boundaries
+    and liquidity traps.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.008
+  category: pre
+  title_en: Disable a tight trailing stop. Turn off intraday trailing immediately
+    before the release. The first random spike will hit the trail and steal the later
+    trend.
+  title_ar: 'ما قبل الخبر: Disable a tight trailing stop. Turn off intraday trailing
+    immediately before the release. The first random spike will hit the trail and
+    steal the later trend.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.009
+  category: pre
+  title_en: Filter simultaneous releases. Raise the danger rating when two prints
+    land together (for example the unemployment rate alongside NFP).
+  title_ar: 'ما قبل الخبر: Filter simultaneous releases. Raise the danger rating when
+    two prints land together (for example the unemployment rate alongside NFP).'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.010
+  category: pre
+  title_en: Check connection quality and ping. MT5 server latency must be under 50
+    ms one minute before the release. If delay is higher, trading is fully banned.
+  title_ar: 'ما قبل الخبر: Check connection quality and ping. MT5 server latency must
+    be under 50 ms one minute before the release. If delay is higher, trading is fully
+    banned.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.011
+  category: pre
+  title_en: Do not trade if the release coincides with the daily rollover. No entry
+    if the print lands on the contract roll and swap update.
+  title_ar: 'ما قبل الخبر: Do not trade if the release coincides with the daily rollover.
+    No entry if the print lands on the contract roll and swap update.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.012
+  category: pre
+  title_en: Consensus deviation threshold. Code the forecast-versus-actual gap required
+    to move the market for real (for example a 50,000-job miss or beat on NFP).
+  title_ar: 'ما قبل الخبر: Consensus deviation threshold. Code the forecast-versus-actual
+    gap required to move the market for real (for example a 50,000-job miss or beat
+    on NFP).'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.013
+  category: pre
+  title_en: Silence during the Fed Chair’s testimony. Stay completely quiet for the
+    entire congressional testimony and until the press conference is fully over.
+  title_ar: 'ما قبل الخبر: Silence during the Fed Chair’s testimony. Stay completely
+    quiet for the entire congressional testimony and until the press conference is
+    fully over.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.014
+  category: pre
+  title_en: Watch DXY liquidity rushing in before the print. If the dollar index is
+    breaking lows minutes before the release with no visible reason, treat it as an
+    early leak of dollar-negative data that supports gold higher.
+  title_ar: 'ما قبل الخبر: Watch DXY liquidity rushing in before the print. If the
+    dollar index is breaking lows minutes before the release with no visible reason,
+    treat it as an early leak of dollar-negative data that supports gold higher.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.015
+  category: pre
+  title_en: Mark macro extreme zones. Draw the nearest daily support and resistance
+    150 to 300 points from the current price, in case the news candle tags them.
+  title_ar: 'ما قبل الخبر: Mark macro extreme zones. Draw the nearest daily support
+    and resistance 150 to 300 points from the current price, in case the news candle
+    tags them.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.016
+  category: pre
+  title_en: Exceptional lot-size cap. Cut allowed risk in half (0.5% instead of 1%)
+    for any execution on a major-data day.
+  title_ar: 'ما قبل الخبر: Exceptional lot-size cap. Cut allowed risk in half (0.5%
+    instead of 1%) for any execution on a major-data day.'
+  type: guardrail
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.017
+  category: pre
+  title_en: Stop-market trap ban. Do not place buy-stop or sell-stop orders to catch
+    the news explosion. They fill at the worst slippage.
+  title_ar: 'ما قبل الخبر: Stop-market trap ban. Do not place buy-stop or sell-stop
+    orders to catch the news explosion. They fill at the worst slippage.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.018
+  category: pre
+  title_en: Separate scheduled news from surprises. Code a distinction between calendar
+    events and geopolitical shocks that require immediate action with no timetable.
+  title_ar: 'ما قبل الخبر: Separate scheduled news from surprises. Code a distinction
+    between calendar events and geopolitical shocks that require immediate action
+    with no timetable.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.019
+  category: data
+  title_en: CPI shock logic. Inflation above forecast means higher yields and a stronger
+    dollar, and a sharp, fast drop in gold. The opposite is also true.
+  title_ar: 'قراءة البيانات: CPI shock logic. Inflation above forecast means higher
+    yields and a stronger dollar, and a sharp, fast drop in gold. The opposite is
+    also true.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.020
+  category: data
+  title_en: NFP dynamics. Very strong hiring with falling unemployment supports a
+    delay in rate cuts, and immediate selling pressure on gold.
+  title_ar: 'قراءة البيانات: NFP dynamics. Very strong hiring with falling unemployment
+    supports a delay in rate cuts, and immediate selling pressure on gold.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.021
+  category: data
+  title_en: Split-data paralysis. If payrolls are dollar-positive and average earnings
+    are dollar-negative, classify the market as “conflicted, high risk” and cancel
+    every trade automatically.
+  title_ar: 'قراءة البيانات: Split-data paralysis. If payrolls are dollar-positive
+    and average earnings are dollar-negative, classify the market as “conflicted,
+    high risk” and cancel every trade automatically.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.022
+  category: data
+  title_en: Revisions matter. Watch the prior month’s revision. A downward revision
+    of last month immediately cancels a positive current print and flips the bias
+    toward gold.
+  title_ar: 'قراءة البيانات: Revisions matter. Watch the prior month’s revision. A
+    downward revision of last month immediately cancels a positive current print and
+    flips the bias toward gold.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.023
+  category: data
+  title_en: The rate decision versus the press conference. The hold or hike sets the
+    first move. The Chair’s tone 30 minutes later sets the day’s final direction.
+  title_ar: 'قراءة البيانات: The rate decision versus the press conference. The hold
+    or hike sets the first move. The Chair’s tone 30 minutes later sets the day’s
+    final direction.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.024
+  category: data
+  title_en: Buy the rumor, sell the fact. If gold has already rallied hard into a
+    rate cut priced at 99%, the moment of the actual print often brings a distribution
+    decline as profits are taken.
+  title_ar: 'قراءة البيانات: Buy the rumor, sell the fact. If gold has already rallied
+    hard into a rate cut priced at 99%, the moment of the actual print often brings
+    a distribution decline as profits are taken.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.025
+  category: data
+  title_en: Surprise-delta score. Do not react if the print matches consensus exactly.
+    A match means stability and a tight, directionless range.
+  title_ar: 'قراءة البيانات: Surprise-delta score. Do not react if the print matches
+    consensus exactly. A match means stability and a tight, directionless range.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.026
+  category: data
+  title_en: PMI reading. A purchasing-managers index below 50.0 signals economic contraction
+    and pushes gold up quickly as an investment haven.
+  title_ar: 'قراءة البيانات: PMI reading. A purchasing-managers index below 50.0 signals
+    economic contraction and pushes gold up quickly as an investment haven.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.027
+  category: data
+  title_en: Ignore secondary numbers. Filter out consumer confidence and home sales
+    if they land in the same week as major inflation and employment data.
+  title_ar: 'قراءة البيانات: Ignore secondary numbers. Filter out consumer confidence
+    and home sales if they land in the same week as major inflation and employment
+    data.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.028
+  category: data
+  title_en: Immediate yield divergence. If the print is dollar-positive but 10-year
+    yields fall, gold’s decline will be temporary and it will bounce quickly.
+  title_ar: 'قراءة البيانات: Immediate yield divergence. If the print is dollar-positive
+    but 10-year yields fall, gold’s decline will be temporary and it will bounce quickly.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.029
+  category: data
+  title_en: PPI as an early CPI warning. Positive PPI surprises pave the way for gradual
+    downside waves in gold ahead of CPI.
+  title_ar: 'قراءة البيانات: PPI as an early CPI warning. Positive PPI surprises pave
+    the way for gradual downside waves in gold ahead of CPI.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.030
+  category: data
+  title_en: Absorption speed. Measure how long price takes to return to the print
+    level. Negative data absorbed in under 5 minutes shows overwhelming institutional
+    buying.
+  title_ar: 'قراءة البيانات: Absorption speed. Measure how long price takes to return
+    to the print level. Negative data absorbed in under 5 minutes shows overwhelming
+    institutional buying.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.031
+  category: data
+  title_en: Weekly jobless claims. Unusually large jumps in claims show a weaker labor
+    market and give gold an immediate buy bid.
+  title_ar: 'قراءة البيانات: Weekly jobless claims. Unusually large jumps in claims
+    show a weaker labor market and give gold an immediate buy bid.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.032
+  category: data
+  title_en: Fed speeches via keywords. Flag dovish phrases such as “slowdown,” “downside
+    risks,” and “watching employment” as support for an intraday buy.
+  title_ar: 'قراءة البيانات: Fed speeches via keywords. Flag dovish phrases such as
+    “slowdown,” “downside risks,” and “watching employment” as support for an intraday
+    buy.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.033
+  category: data
+  title_en: Rate-futures probability shift. Track the FedWatch tool immediately after
+    the print. A jump in cut odds supports gold staying bid for the rest of the session.
+  title_ar: 'قراءة البيانات: Rate-futures probability shift. Track the FedWatch tool
+    immediately after the print. A jump in cut odds supports gold staying bid for
+    the rest of the session.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.034
+  category: data
+  title_en: Isolate the dollar’s intraday effect. If gold falls while the dollar falls
+    at the same time, the driver is a broad liquidity liquidation, not a normal data
+    response.
+  title_ar: 'قراءة البيانات: Isolate the dollar’s intraday effect. If gold falls while
+    the dollar falls at the same time, the driver is a broad liquidity liquidation,
+    not a normal data response.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.035
+  category: micro
+  title_en: The dead first minute (the 60-second void). A hard ban on any entry or
+    analysis during the first 60 seconds after the print. Candles in that minute are
+    algorithmic chaos.
+  title_ar: 'شمعة الخبر: The dead first minute (the 60-second void). A hard ban on
+    any entry or analysis during the first 60 seconds after the print. Candles in
+    that minute are algorithmic chaos.'
+  type: guardrail
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.036
+  category: micro
+  title_en: Two-sided liquidity sweep. A candle that takes the pre-news high and,
+    in the same minute, takes the pre-news low is a liquidation of traders’ contracts,
+    not a trend.
+  title_ar: 'شمعة الخبر: Two-sided liquidity sweep. A candle that takes the pre-news
+    high and, in the same minute, takes the pre-news low is a liquidation of traders’
+    contracts, not a trend.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.037
+  category: micro
+  title_en: The M5 close is the primary reference. The first 5-minute candle that
+    closes after the print is the technical standard. Trade the direction of its body
+    if the body is more than 70% of the range.
+  title_ar: 'شمعة الخبر: The M5 close is the primary reference. The first 5-minute
+    candle that closes after the print is the technical standard. Trade the direction
+    of its body if the body is more than 70% of the range.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.038
+  category: micro
+  title_en: Long rejection-wick rule. If the news candle leaves an upper wick twice
+    the body after a sudden spike, classify the spike as a trap and activate the sell
+    immediately.
+  title_ar: 'شمعة الخبر: Long rejection-wick rule. If the news candle leaves an upper
+    wick twice the body after a sudden spike, classify the spike as a trap and activate
+    the sell immediately.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.039
+  category: micro
+  title_en: News fair value gap. A huge price void on the one-minute candle defines
+    a later reaction zone. Do not buy until price has filled 50% of that void.
+  title_ar: 'شمعة الخبر: News fair value gap. A huge price void on the one-minute
+    candle defines a later reaction zone. Do not buy until price has filled 50% of
+    that void.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.040
+  category: micro
+  title_en: A real break of the pre-news range. The post-news direction counts only
+    if an M15 candle closes entirely outside the range marked before the print.
+  title_ar: 'شمعة الخبر: A real break of the pre-news range. The post-news direction
+    counts only if an M15 candle closes entirely outside the range marked before the
+    print.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.041
+  category: micro
+  title_en: Instant engulfing deception. If gold rises 100 points in one minute and
+    the next candle engulfs that entire rise in minute two, the day’s real direction
+    is down.
+  title_ar: 'شمعة الخبر: Instant engulfing deception. If gold rises 100 points in
+    one minute and the next candle engulfs that entire rise in minute two, the day’s
+    real direction is down.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.042
+  category: micro
+  title_en: Do not enter the middle of a giant candle. If gold has already moved 150
+    points, buying the high out of fear of missing out is banned. Entry is only on
+    the pullback.
+  title_ar: 'شمعة الخبر: Do not enter the middle of a giant candle. If gold has already
+    moved 150 points, buying the high out of fear of missing out is banned. Entry
+    is only on the pullback.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.043
+  category: micro
+  title_en: Consecutive tick volume. If tick volume fades immediately after the first
+    candle, algorithmic fuel is spent and the move is about to stall.
+  title_ar: 'شمعة الخبر: Consecutive tick volume. If tick volume fades immediately
+    after the first candle, algorithmic fuel is spent and the move is about to stall.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.044
+  category: micro
+  title_en: Range reclaim reversal. If the print breaks a major daily low and price
+    trades back above that low within 10 minutes, that is a decisive sell trap and
+    a major buy.
+  title_ar: 'شمعة الخبر: Range reclaim reversal. If the print breaks a major daily
+    low and price trades back above that low within 10 minutes, that is a decisive
+    sell trap and a major buy.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.045
+  category: micro
+  title_en: Wicks vanish in a sweeping trend. When the following minute candles open
+    and run in one direction with no wicks, institutional flow is continuous. Ride
+    it.
+  title_ar: 'شمعة الخبر: Wicks vanish in a sweeping trend. When the following minute
+    candles open and run in one direction with no wicks, institutional flow is continuous.
+    Ride it.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.046
+  category: micro
+  title_en: False break of the Asian high. Using the news candle to poke a few points
+    through the Asian high and then collapse is one of gold’s clearest daily liquidity
+    sweeps.
+  title_ar: 'شمعة الخبر: False break of the Asian high. Using the news candle to poke
+    a few points through the Asian high and then collapse is one of gold’s clearest
+    daily liquidity sweeps.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.047
+  category: micro
+  title_en: One-minute noise filter. Do not use one-minute closes for high-stakes
+    decisions during news. Use M5 and M15 to filter noise.
+  title_ar: 'شمعة الخبر: One-minute noise filter. Do not use one-minute closes for
+    high-stakes decisions during news. Use M5 and M15 to filter noise.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.048
+  category: micro
+  title_en: Outer Bollinger explosion. A news candle that closes 90% outside the upper
+    Bollinger Band is extreme extension and forces a correction toward the middle
+    line.
+  title_ar: 'شمعة الخبر: Outer Bollinger explosion. A news candle that closes 90%
+    outside the upper Bollinger Band is extreme extension and forces a correction
+    toward the middle line.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.049
+  category: micro
+  title_en: The shock wick as support. The lowest point of a bullish news candle’s
+    wick is the ideal stop for any later buy.
+  title_ar: 'شمعة الخبر: The shock wick as support. The lowest point of a bullish
+    news candle’s wick is the ideal stop for any later buy.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.050
+  category: micro
+  title_en: Candles aligned with a trendline break. If the news explosion breaks a
+    major H1 descending trendline and closes above it, the bias flips to a sustained
+    uptrend automatically.
+  title_ar: 'شمعة الخبر: Candles aligned with a trendline break. If the news explosion
+    breaks a major H1 descending trendline and closes above it, the bias flips to
+    a sustained uptrend automatically.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.051
+  category: micro
+  title_en: Paralyzed volatility (compression trap). If gold does not move after an
+    important print and stays inside a 20-point range, a violent delayed explosion
+    arrives within 30 minutes.
+  title_ar: 'شمعة الخبر: Paralyzed volatility (compression trap). If gold does not
+    move after an important print and stays inside a 20-point range, a violent delayed
+    explosion arrives within 30 minutes.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.052
+  category: micro
+  title_en: Hollow support break. A fast break of support on weak tick volume, caused
+    by a liquidity vacuum, is a false break. Do not sell it.
+  title_ar: 'شمعة الخبر: Hollow support break. A fast break of support on weak tick
+    volume, caused by a liquidity vacuum, is a false break. Do not sell it.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.053
+  category: micro
+  title_en: Balance on a news doji. If the first M15 candle after the print closes
+    as a doji on huge volume, buyers and sellers are tied. Trading is banned until
+    one side of that doji breaks.
+  title_ar: 'شمعة الخبر: Balance on a news doji. If the first M15 candle after the
+    print closes as a doji on huge volume, buyers and sellers are tied. Trading is
+    banned until one side of that doji breaks.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.054
+  category: micro
+  title_en: Momentum reversal on the first minor-low break. In an explosive rally,
+    a break of the prior one-minute candle’s low is the first warning that profit-taking
+    and a correction have started.
+  title_ar: 'شمعة الخبر: Momentum reversal on the first minor-low break. In an explosive
+    rally, a break of the prior one-minute candle’s low is the first warning that
+    profit-taking and a correction have started.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.055
+  category: micro
+  title_en: Holding above the news high. If gold holds above the high of the first
+    news candle for more than 15 minutes, the upside path continues toward new historical
+    targets.
+  title_ar: 'شمعة الخبر: Holding above the news high. If gold holds above the high
+    of the first news candle for more than 15 minutes, the upside path continues toward
+    new historical targets.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.073
+  category: ride
+  title_en: The golden stability window (the 15-minute rule). The best time for high-probability
+    entries starts 15 to 30 minutes after the print.
+  title_ar: 'بعد الخبر: The golden stability window (the 15-minute rule). The best
+    time for high-probability entries starts 15 to 30 minutes after the print.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.074
+  category: ride
+  title_en: Retest entry of the shock candle’s high or low. Wait for a calm return
+    to the break level of the first news candle, and enter with the reaction direction.
+  title_ar: 'بعد الخبر: Retest entry of the shock candle’s high or low. Wait for a
+    calm return to the break level of the first news candle, and enter with the reaction
+    direction.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.075
+  category: ride
+  title_en: H1 closes after the print. Gold’s honest direction is set by the close
+    of the first hourly candle after the release. Trade in the direction of that close.
+  title_ar: 'بعد الخبر: H1 closes after the print. Gold’s honest direction is set
+    by the close of the first hourly candle after the release. Trade in the direction
+    of that close.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.076
+  category: ride
+  title_en: Retracement to the optimal trade entry (OTE). After the first explosive
+    leg, draw Fibonacci on the whole candle. Entry is between 61.8% and 78.6%.
+  title_ar: 'بعد الخبر: Retracement to the optimal trade entry (OTE). After the first
+    explosive leg, draw Fibonacci on the whole candle. Entry is between 61.8% and
+    78.6%.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.077
+  category: ride
+  title_en: New York momentum continuation. If the 3:30 p.m. Mecca-time news confirms
+    gold’s direction, the move often continues in that direction until about 6:30
+    p.m.
+  title_ar: 'بعد الخبر: New York momentum continuation. If the 3:30 p.m. Mecca-time
+    news confirms gold’s direction, the move often continues in that direction until
+    about 6:30 p.m.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.078
+  category: ride
+  title_en: Staged exits after major news. Split profit targets into three successive
+    parts, to absorb the long extensions that economic data can create.
+  title_ar: 'بعد الخبر: Staged exits after major news. Split profit targets into three
+    successive parts, to absorb the long extensions that economic data can create.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.079
+  category: ride
+  title_en: Confirmation by a break of historical levels. If the news explosion coincides
+    with a break and hold above a prior weekly high, treat it as a multi-day swing
+    buy.
+  title_ar: 'بعد الخبر: Confirmation by a break of historical levels. If the news
+    explosion coincides with a break and hold above a prior weekly high, treat it
+    as a multi-day swing buy.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.080
+  category: ride
+  title_en: Absorption after the shock. If price cannot print a new high in the three
+    candles after the news candle, that warns of a reversal or the start of a correction.
+  title_ar: 'بعد الخبر: Absorption after the shock. If price cannot print a new high
+    in the three candles after the news candle, that warns of a reversal or the start
+    of a correction.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.081
+  category: ride
+  title_en: Confirmed engulfing after the pullback. Wait for the news-candle correction
+    to finish and for an M5 candle that engulfs the corrective candles, then enter
+    immediately with the main direction.
+  title_ar: 'بعد الخبر: Confirmed engulfing after the pullback. Wait for the news-candle
+    correction to finish and for an M5 candle that engulfs the corrective candles,
+    then enter immediately with the main direction.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.082
+  category: ride
+  title_en: Counter-trade only after the daily range is exhausted. If gold has already
+    traveled 200% of its average daily range on the news move, stop chasing. Look
+    for reversal signals instead.
+  title_ar: 'بعد الخبر: Counter-trade only after the daily range is exhausted. If
+    gold has already traveled 200% of its average daily range on the news move, stop
+    chasing. Look for reversal signals instead.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.083
+  category: ride
+  title_en: Broken resistance becomes a solid support wall. Any ceiling blown apart
+    by news becomes the best buy on the first calm pullback that tags it.
+  title_ar: 'بعد الخبر: Broken resistance becomes a solid support wall. Any ceiling
+    blown apart by news becomes the best buy on the first calm pullback that tags
+    it.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.084
+  category: ride
+  title_en: DXY confluence after the shock. Do not buy gold after the print unless
+    the dollar index confirms the move by continuing to break its intraday lows.
+  title_ar: 'بعد الخبر: DXY confluence after the shock. Do not buy gold after the
+    print unless the dollar index confirms the move by continuing to break its intraday
+    lows.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.085
+  category: ride
+  title_en: Exit on a broadening wedge. Successive higher highs and lower lows after
+    the print mean chaotic noise. Exit the market immediately.
+  title_ar: 'بعد الخبر: Exit on a broadening wedge. Successive higher highs and lower
+    lows after the print mean chaotic noise. Exit the market immediately.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.086
+  category: ride
+  title_en: Follow post-data remarks. Watch Federal Reserve officials in the hours
+    after the data. Remarks that support the print lock the direction. Remarks that
+    oppose it reverse it.
+  title_ar: 'بعد الخبر: Follow post-data remarks. Watch Federal Reserve officials
+    in the hours after the data. Remarks that support the print lock the direction.
+    Remarks that oppose it reverse it.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.087
+  category: geo
+  title_en: Suspend technical analysis during military crises. When wars or sudden
+    air strikes begin, technical resistance and overbought readings are cancelled.
+    Gold is an outright buy.
+  title_ar: 'الملاذ: Suspend technical analysis during military crises. When wars
+    or sudden air strikes begin, technical resistance and overbought readings are
+    cancelled. Gold is an outright buy.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.088
+  category: geo
+  title_en: Absolute ban on shorting a safe-haven wave. No gold shorts, however attractive
+    the technicals, while attacks and geopolitical crises are escalating.
+  title_ar: 'الملاذ: Absolute ban on shorting a safe-haven wave. No gold shorts, however
+    attractive the technicals, while attacks and geopolitical crises are escalating.'
+  type: guardrail
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.089
+  category: geo
+  title_en: Immediate buy on the first credible breaking report. Send a direct market
+    buy as soon as global news agencies confirm a major geopolitical event. Do not
+    wait for a pullback.
+  title_ar: 'الملاذ: Immediate buy on the first credible breaking report. Send a direct
+    market buy as soon as global news agencies confirm a major geopolitical event.
+    Do not wait for a pullback.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.090
+  category: geo
+  title_en: Handling a hot weekend gap. If gold gaps up by more than 150 points because
+    of events over the weekend, do not chase the buy immediately. Wait for the gap
+    to be cleared.
+  title_ar: 'الملاذ: Handling a hot weekend gap. If gold gaps up by more than 150
+    points because of events over the weekend, do not chase the buy immediately. Wait
+    for the gap to be cleared.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.091
+  category: geo
+  title_en: Full decoupling from the dollar and equities. In global panic, gold rises
+    together with the dollar while equity markets fall. Do not require a weak dollar
+    as a condition for gold to rise in that regime.
+  title_ar: 'الملاذ: Full decoupling from the dollar and equities. In global panic,
+    gold rises together with the dollar while equity markets fall. Do not require
+    a weak dollar as a condition for gold to rise in that regime.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.092
+  category: geo
+  title_en: Historical highs as open targets. In geopolitical panic, nearby targets
+    are cancelled. External Fibonacci extensions (2.0 and 2.618) become the primary
+    targets.
+  title_ar: 'الملاذ: Historical highs as open targets. In geopolitical panic, nearby
+    targets are cancelled. External Fibonacci extensions (2.0 and 2.618) become the
+    primary targets.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.093
+  category: geo
+  title_en: De-escalation invalidation. The moment an official statement signals calming
+    or a ceasefire, close buy trades immediately. A violent, fast collapse is possible.
+  title_ar: 'الملاذ: De-escalation invalidation. The moment an official statement
+    signals calming or a ceasefire, close buy trades immediately. A violent, fast
+    collapse is possible.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.094
+  category: geo
+  title_en: Riding banking-panic waves. When major banks fail or a sovereign default
+    hits, gold is treated as the primary survival asset. Every corrective dip is a
+    necessary buy.
+  title_ar: 'الملاذ: Riding banking-panic waves. When major banks fail or a sovereign
+    default hits, gold is treated as the primary survival asset. Every corrective
+    dip is a necessary buy.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.095
+  category: geo
+  title_en: Stop under the breaking-news candle low. Place the stop 20 points under
+    the low from which price launched when the geopolitical report spread.
+  title_ar: 'الملاذ: Stop under the breaking-news candle low. Place the stop 20 points
+    under the low from which price launched when the geopolitical report spread.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.096
+  category: geo
+  title_en: Beware of media amplification. Distinguish limited skirmishes from major
+    crises. Inflating a passing event is followed by strong downside distribution
+    within a few hours.
+  title_ar: 'الملاذ: Beware of media amplification. Distinguish limited skirmishes
+    from major crises. Inflating a passing event is followed by strong downside distribution
+    within a few hours.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.097
+  category: geo
+  title_en: Do not buy the peak of the panic wave. When gold and gold buying lead
+    general news channels watched by non-traders, the rally is late. Beware the corrective
+    decline.
+  title_ar: 'الملاذ: Do not buy the peak of the panic wave. When gold and gold buying
+    lead general news channels watched by non-traders, the rally is late. Beware the
+    corrective decline.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.098
+  category: geo
+  title_en: News-velocity metric. Watch how fast urgent headlines arrive. Escalatory
+    headlines every few minutes are a green light to stay in buy trades.
+  title_ar: 'الملاذ: News-velocity metric. Watch how fast urgent headlines arrive.
+    Escalatory headlines every few minutes are a green light to stay in buy trades.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.099
+  category: geo
+  title_en: Managing gold when global trade chokepoints close. Crises that threaten
+    shipping lanes and oil prices lift inflation and gold together. Buying is the
+    only strategic option then.
+  title_ar: 'الملاذ: Managing gold when global trade chokepoints close. Crises that
+    threaten shipping lanes and oil prices lift inflation and gold together. Buying
+    is the only strategic option then.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: news.100
+  category: geo
+  title_en: 'Sovereign rule for gold volatility. In panic and major news, remember:
+    the skilled trader is not the one who captures every point. It is the one who
+    crosses the storm with sound position sizing and protected capital.'
+  title_ar: 'الملاذ: Sovereign rule for gold volatility. In panic and major news,
+    remember: the skilled trader is not the one who captures every point. It is the
+    one who crosses the storm with sound position sizing and protected capital.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
