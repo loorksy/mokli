@@ -1,0 +1,14 @@
+services:
+  mokli:
+    build: .
+    ports:
+      - "127.0.0.1:8787:8787"
+    environment:
+      MOKLI_HOST: 0.0.0.0
+      MOKLI_DATA_DIR: /data
+      MOKLI_PASSPHRASE: ${MOKLI_PASSPHRASE:-change-me}
+      MOKLI_LIVE: "0"
+    volumes:
+      - mokli-data:/data
+volumes:
+  mokli-data:

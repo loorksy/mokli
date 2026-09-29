@@ -1,0 +1,1101 @@
+- id: candle.001
+  category: time
+  title_en: The zero minute of US data (the 8:30 a.m. / 10:00 a.m. EST rule). If a
+    wide-range candle forms at minute 00 or 30 together with a major US release time,
+    classify it as a news candle immediately.
+  title_ar: 'توقيت الشمعة: The zero minute of US data (the 8:30 a.m. / 10:00 a.m.
+    EST rule). If a wide-range candle forms at minute 00 or 30 together with a major
+    US release time, classify it as a news candle immediately.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.002
+  category: time
+  title_en: The minute-45 candle (flash PMI releases). Explosive candles at minute
+    45 (for example 9:45 a.m. New York) are usually preliminary purchasing-managers
+    releases and are treated as news candles.
+  title_ar: 'توقيت الشمعة: The minute-45 candle (flash PMI releases). Explosive candles
+    at minute 45 (for example 9:45 a.m. New York) are usually preliminary purchasing-managers
+    releases and are treated as news candles.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.003
+  category: time
+  title_en: Federal Reserve decision window (FOMC, 2:00 p.m. EST). Any candle that
+    forms at exactly 2:00 p.m. Washington time, every six weeks, is the rate-decision
+    candle, regardless of its shape.
+  title_ar: 'توقيت الشمعة: Federal Reserve decision window (FOMC, 2:00 p.m. EST).
+    Any candle that forms at exactly 2:00 p.m. Washington time, every six weeks, is
+    the rate-decision candle, regardless of its shape.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.004
+  category: time
+  title_en: Fed press-conference candle (2:30 p.m.). The sequence of candles that
+    starts at 2:30 p.m. and runs for 45 minutes is live remarks and is classified
+    as a chain of news candles.
+  title_ar: 'توقيت الشمعة: Fed press-conference candle (2:30 p.m.). The sequence of
+    candles that starts at 2:30 p.m. and runs for 45 minutes is live remarks and is
+    classified as a chain of news candles.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.005
+  category: time
+  title_en: Jobs-report candle (first Friday of the month). The 8:30 a.m. New York
+    candle on the first Friday of each calendar month is officially the NFP candle.
+    No extra technical confirmation is required.
+  title_ar: 'توقيت الشمعة: Jobs-report candle (first Friday of the month). The 8:30
+    a.m. New York candle on the first Friday of each calendar month is officially
+    the NFP candle. No extra technical confirmation is required.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.006
+  category: time
+  title_en: London-open news flow. Large candles between 8:00 and 8:15 a.m. London
+    time that coincide with UK GDP or UK inflation are classified as a European macro
+    candle.
+  title_ar: 'توقيت الشمعة: London-open news flow. Large candles between 8:00 and 8:15
+    a.m. London time that coincide with UK GDP or UK inflation are classified as a
+    European macro candle.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.007
+  category: time
+  title_en: London PM gold fix. At 3:00 p.m. London time, sudden high-volume candles
+    reflect interbank spot-gold reprice flows.
+  title_ar: 'توقيت الشمعة: London PM gold fix. At 3:00 p.m. London time, sudden high-volume
+    candles reflect interbank spot-gold reprice flows.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.008
+  category: time
+  title_en: US Treasury auction candles. Explosive candles at 1:00 p.m. New York time
+    are tied to 10-year or 30-year Treasury auction results.
+  title_ar: 'توقيت الشمعة: US Treasury auction candles. Explosive candles at 1:00
+    p.m. New York time are tied to 10-year or 30-year Treasury auction results.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.009
+  category: time
+  title_en: Monthly contract-expiry candle (options expiry / futures expiration).
+    Abnormal volatility on the last Friday of the month, at gold futures expiry, is
+    classified as liquidation and settlement flow.
+  title_ar: 'توقيت الشمعة: Monthly contract-expiry candle (options expiry / futures
+    expiration). Abnormal volatility on the last Friday of the month, at gold futures
+    expiry, is classified as liquidation and settlement flow.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.010
+  category: time
+  title_en: Calendar API sync. If the gap between the start of the candle and a red
+    (high-impact) calendar event is under 60 seconds, classify it as a news candle
+    automatically.
+  title_ar: 'توقيت الشمعة: Calendar API sync. If the gap between the start of the
+    candle and a red (high-impact) calendar event is under 60 seconds, classify it
+    as a news candle automatically.'
+  type: detector
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.011
+  category: time
+  title_en: Oil-inventory report and its spillover. Wednesday, 10:30 a.m. US Eastern.
+    If it drives a violent gold move together with an oil spike, record it as a linked
+    energy news candle.
+  title_ar: 'توقيت الشمعة: Oil-inventory report and its spillover. Wednesday, 10:30
+    a.m. US Eastern. If it drives a violent gold move together with an oil spike,
+    record it as a linked energy news candle.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.012
+  category: time
+  title_en: European Central Bank decision. The Thursday 2:15 p.m. Central European
+    Time candle on meeting days is treated as a monetary shock for currencies, and
+    it feeds through to gold.
+  title_ar: 'توقيت الشمعة: European Central Bank decision. The Thursday 2:15 p.m.
+    Central European Time candle on meeting days is treated as a monetary shock for
+    currencies, and it feeds through to gold.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.013
+  category: time
+  title_en: OPEC+ meeting candle. Explosive candles on OPEC meeting days, caused by
+    production decisions that are not scheduled to the hour, are classified as commodity
+    news.
+  title_ar: 'توقيت الشمعة: OPEC+ meeting candle. Explosive candles on OPEC meeting
+    days, caused by production decisions that are not scheduled to the hour, are classified
+    as commodity news.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.014
+  category: time
+  title_en: Unscheduled central-bank governor speeches. The candle that coincides
+    with a live broadcast or a published text from the Fed Chair at an economic forum.
+  title_ar: 'توقيت الشمعة: Unscheduled central-bank governor speeches. The candle
+    that coincides with a live broadcast or a published text from the Fed Chair at
+    an economic forum.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.015
+  category: time
+  title_en: Quarter-end rebalancing candle. Abnormal candles in the last 30 minutes
+    of trading at the end of March, June, September, and December are classified as
+    institutional portfolio-rebalance candles.
+  title_ar: 'توقيت الشمعة: Quarter-end rebalancing candle. Abnormal candles in the
+    last 30 minutes of trading at the end of March, June, September, and December
+    are classified as institutional portfolio-rebalance candles.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.016
+  category: range
+  title_en: The 3× ATR rule. If the candle’s range (high minus low) is greater than
+    3 times the 14-period ATR, it is a confirmed news candle.
+  title_ar: 'المدى: The 3× ATR rule. If the candle’s range (high minus low) is greater
+    than 3 times the 14-period ATR, it is a confirmed news candle.'
+  type: detector
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.017
+  category: range
+  title_en: One-minute range outlier. Gold moving more than 60 to 80 points in a single
+    one-minute candle, outside dead hours, is a direct fingerprint of a news candle.
+  title_ar: 'المدى: One-minute range outlier. Gold moving more than 60 to 80 points
+    in a single one-minute candle, outside dead hours, is a direct fingerprint of
+    a news candle.'
+  type: detector
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.018
+  category: range
+  title_en: Intraday daily-range break. If a 5-minute candle covers more than 40%
+    of gold’s average daily range in one push, record it immediately as a news candle.
+  title_ar: 'المدى: Intraday daily-range break. If a 5-minute candle covers more than
+    40% of gold’s average daily range in one push, record it immediately as a news
+    candle.'
+  type: detector
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.019
+  category: range
+  title_en: Distance velocity. Price moving faster than 1.5 points per second, continuously,
+    with no pullback, for 30 seconds.
+  title_ar: 'المدى: Distance velocity. Price moving faster than 1.5 points per second,
+    continuously, with no pullback, for 30 seconds.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.020
+  category: range
+  title_en: Range versus the last 20 candles. If the current candle’s size equals
+    the combined length of the previous 10 candles, the driver is an external news
+    engine.
+  title_ar: 'المدى: Range versus the last 20 candles. If the current candle’s size
+    equals the combined length of the previous 10 candles, the driver is an external
+    news engine.'
+  type: detector
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.021
+  category: range
+  title_en: Hidden intraday gap. Price jumps from one tick to the next with no trades
+    in the space between, leaving a price void inside the intraday candle.
+  title_ar: 'المدى: Hidden intraday gap. Price jumps from one tick to the next with
+    no trades in the space between, leaving a price void inside the intraday candle.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.022
+  category: range
+  title_en: Instant break of Bollinger extremes (beyond 3.5 standard deviations).
+    A close outside the 3.5-sigma Bollinger Band marks a sweeping news event.
+  title_ar: 'المدى: Instant break of Bollinger extremes (beyond 3.5 standard deviations).
+    A close outside the 3.5-sigma Bollinger Band marks a sweeping news event.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.023
+  category: range
+  title_en: Weekly-range liquidation candle. A single one-hour candle engulfs the
+    entire trading range of the previous three days, up or down.
+  title_ar: 'المدى: Weekly-range liquidation candle. A single one-hour candle engulfs
+    the entire trading range of the previous three days, up or down.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.024
+  category: range
+  title_en: Spike candle. A fast vertical move of more than 100 points in under 120
+    seconds, followed by a sudden stop at a pivotal number.
+  title_ar: 'المدى: Spike candle. A fast vertical move of more than 100 points in
+    under 120 seconds, followed by a sudden stop at a pivotal number.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.025
+  category: range
+  title_en: Expanding-bar anomaly. Consecutive M5 candles grow in a doubling geometric
+    progression within a few minutes. (The source left the progression formula blank.)
+  title_ar: 'المدى: Expanding-bar anomaly. Consecutive M5 candles grow in a doubling
+    geometric progression within a few minutes. (The source left the progression formula
+    blank.)'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.026
+  category: range
+  title_en: Low-volatility discharge candle. A huge candle after an extremely tight
+    range of no more than 15 points. The shock contrast confirms a news engine.
+  title_ar: 'المدى: Low-volatility discharge candle. A huge candle after an extremely
+    tight range of no more than 15 points. The shock contrast confirms a news engine.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.027
+  category: range
+  title_en: Yesterday’s high and low broken inside one 15-minute candle. Breaking
+    both yesterday’s high and yesterday’s low inside the same M15 candle marks a major
+    data shock.
+  title_ar: 'المدى: Yesterday’s high and low broken inside one 15-minute candle. Breaking
+    both yesterday’s high and yesterday’s low inside the same M15 candle marks a major
+    data shock.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.028
+  category: range
+  title_en: One-way extended range. A candle longer than 120 points with almost no
+    upper or lower wick (full-body marubozu) on M5.
+  title_ar: 'المدى: One-way extended range. A candle longer than 120 points with almost
+    no upper or lower wick (full-body marubozu) on M5.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.029
+  category: range
+  title_en: Air retracement candle. Price travels a huge distance, then retraces 80%
+    inside the same candle, without building clear support or a structured correction.
+  title_ar: 'المدى: Air retracement candle. Price travels a huge distance, then retraces
+    80% inside the same candle, without building clear support or a structured correction.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.030
+  category: range
+  title_en: Statistical range outlier (range z-score greater than 4). The current
+    candle’s range is more than four standard deviations above the session’s historical
+    average.
+  title_ar: 'المدى: Statistical range outlier (range z-score greater than 4). The
+    current candle’s range is more than four standard deviations above the session’s
+    historical average.'
+  type: detector
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.031
+  category: volume
+  title_en: Tick-volume explosion (tick-volume z-score greater than 3.5). The tick
+    count inside the candle exceeds the average tick volume of the last 50 candles
+    by more than three standard deviations.
+  title_ar: 'الحجم: Tick-volume explosion (tick-volume z-score greater than 3.5).
+    The tick count inside the candle exceeds the average tick volume of the last 50
+    candles by more than three standard deviations.'
+  type: detector
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.032
+  category: volume
+  title_en: Ticks per second spike. Tick flow rises from a normal 5–15 ticks per second
+    to more than 80–150 ticks per second on gold.
+  title_ar: 'الحجم: Ticks per second spike. Tick flow rises from a normal 5–15 ticks
+    per second to more than 80–150 ticks per second on gold.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.033
+  category: volume
+  title_en: Volume climax. 70% of the candle’s total tick volume concentrates in the
+    first 15 seconds of the candle, then the pace collapses.
+  title_ar: 'الحجم: Volume climax. 70% of the candle’s total tick volume concentrates
+    in the first 15 seconds of the candle, then the pace collapses.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.034
+  category: volume
+  title_en: Extreme one-minute volume. A single M1 candle’s tick volume exceeds what
+    a full H1 candle would print in quiet trading.
+  title_ar: 'الحجم: Extreme one-minute volume. A single M1 candle’s tick volume exceeds
+    what a full H1 candle would print in quiet trading.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.035
+  category: volume
+  title_en: Explosive volume with no time gaps. A continuous order stream that does
+    not allow more than 5 milliseconds between ticks.
+  title_ar: 'الحجم: Explosive volume with no time gaps. A continuous order stream
+    that does not allow more than 5 milliseconds between ticks.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.036
+  category: volume
+  title_en: Buy volume inside a giant bearish candle. Heavy buy tick volume concentrated
+    at the bottom of a fast bearish candle. That is an intraday news-absorption fingerprint
+    of the market maker.
+  title_ar: 'الحجم: Buy volume inside a giant bearish candle. Heavy buy tick volume
+    concentrated at the bottom of a fast bearish candle. That is an intraday news-absorption
+    fingerprint of the market maker.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.037
+  category: volume
+  title_en: One candle doubles the session’s cumulative volume. A single candle contributes
+    25% of all volume activity in the session up to that moment.
+  title_ar: 'الحجم: One candle doubles the session’s cumulative volume. A single candle
+    contributes 25% of all volume activity in the session up to that moment.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.038
+  category: volume
+  title_en: Opposite volume vacuum. A rocket move followed immediately by falling
+    volume on the next candles. The response was news-driven and is not supported
+    by sustained liquidity.
+  title_ar: 'الحجم: Opposite volume vacuum. A rocket move followed immediately by
+    falling volume on the next candles. The response was news-driven and is not supported
+    by sustained liquidity.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.039
+  category: volume
+  title_en: Volume explosion on a historical-high break. The day’s highest tick reading
+    prints at the moment a major level breaks, driven by economic data.
+  title_ar: 'الحجم: Volume explosion on a historical-high break. The day’s highest
+    tick reading prints at the moment a major level breaks, driven by economic data.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.040
+  category: volume
+  title_en: Heavy delta imbalance. One side of the market (buy or sell) controls more
+    than 90% of the candle’s ticks.
+  title_ar: 'الحجم: Heavy delta imbalance. One side of the market (buy or sell) controls
+    more than 90% of the candle’s ticks.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.041
+  category: volume
+  title_en: Ask evaporation. Buy ticks increase with wide price jumps because market
+    makers have pulled their limit offers.
+  title_ar: 'الحجم: Ask evaporation. Buy ticks increase with wide price jumps because
+    market makers have pulled their limit offers.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.042
+  category: volume
+  title_en: Compare volume with the same minute historically. Compare this candle’s
+    volume with the same minute on prior days. An increase of more than 500% means
+    it is certainly a news candle.
+  title_ar: 'الحجم: Compare volume with the same minute historically. Compare this
+    candle’s volume with the same minute on prior days. An increase of more than 500%
+    means it is certainly a news candle.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.043
+  category: volume
+  title_en: Trading density at the candle extremes. Ticks cluster at the upper or
+    lower wick, showing a fast liquidation battle during the release.
+  title_ar: 'الحجم: Trading density at the candle extremes. Ticks cluster at the upper
+    or lower wick, showing a fast liquidation battle during the release.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.044
+  category: volume
+  title_en: Volume jump with a brief price freeze. Ticks freeze for two seconds because
+    the broker server is processing orders, then explode as 200 ticks at once.
+  title_ar: 'الحجم: Volume jump with a brief price freeze. Ticks freeze for two seconds
+    because the broker server is processing orders, then explode as 200 ticks at once.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.045
+  category: volume
+  title_en: Total volume air-pocket. A large price slip on relatively low ticks, because
+    opposing liquidity was simply absent from the book at the moment of the number.
+  title_ar: 'الحجم: Total volume air-pocket. A large price slip on relatively low
+    ticks, because opposing liquidity was simply absent from the book at the moment
+    of the number.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.046
+  category: spread
+  title_en: Sudden spread expansion (spread greater than 3 times normal). The Bid–Ask
+    gap jumps from 15–20 points to 60–120 points in fractions of a second.
+  title_ar: 'السبريد: Sudden spread expansion (spread greater than 3 times normal).
+    The Bid–Ask gap jumps from 15–20 points to 60–120 points in fractions of a second.'
+  type: detector
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.047
+  category: spread
+  title_en: Pumping spread. The spread expands and contracts wildly on every new tick.
+    That is the classic fingerprint of defensive liquidity-pull algorithms.
+  title_ar: 'السبريد: Pumping spread. The spread expands and contracts wildly on every
+    new tick. That is the classic fingerprint of defensive liquidity-pull algorithms.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.048
+  category: spread
+  title_en: Wide spread with a directional bullish candle. Price rockets higher while
+    the spread stays very wide. Liquidity providers are refusing to quote a stable
+    offer.
+  title_ar: 'السبريد: Wide spread with a directional bullish candle. Price rockets
+    higher while the spread stays very wide. Liquidity providers are refusing to quote
+    a stable offer.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.049
+  category: spread
+  title_en: Bid or Ask freeze. The Ask freezes while the Bid keeps jumping higher.
+    A momentary pricing imbalance caused by a news shock.
+  title_ar: 'السبريد: Bid or Ask freeze. The Ask freezes while the Bid keeps jumping
+    higher. A momentary pricing imbalance caused by a news shock.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.050
+  category: spread
+  title_en: Slippage on live fills. Slippage between order price and fill price exceeds
+    20 points on the engine’s probe orders.
+  title_ar: 'السبريد: Slippage on live fills. Slippage between order price and fill
+    price exceeds 20 points on the engine’s probe orders.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.051
+  category: spread
+  title_en: Order-book clearance. Deep liquidity (depth of market) disappears, leaving
+    a void that small trades can move.
+  title_ar: 'السبريد: Order-book clearance. Deep liquidity (depth of market) disappears,
+    leaving a void that small trades can move.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.052
+  category: spread
+  title_en: Spread widens 10 seconds before price moves. Liquidity providers front-run
+    the statement by widening the spread on purpose before price itself moves.
+  title_ar: 'السبريد: Spread widens 10 seconds before price moves. Liquidity providers
+    front-run the statement by widening the spread on purpose before price itself
+    moves.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.053
+  category: spread
+  title_en: Gapped ticks. Price jumps from 2450.10 to 2451.80 in one tick, skipping
+    the prices in between.
+  title_ar: 'السبريد: Gapped ticks. Price jumps from 2450.10 to 2451.80 in one tick,
+    skipping the prices in between.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.054
+  category: spread
+  title_en: Liquidity collapse at peak hours. A sudden spread widening in the middle
+    of the New York session, when liquidity should be at its best, is decisive evidence
+    of an emergency event.
+  title_ar: 'السبريد: Liquidity collapse at peak hours. A sudden spread widening in
+    the middle of the New York session, when liquidity should be at its best, is decisive
+    evidence of an emergency event.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.055
+  category: spread
+  title_en: Rejection through an open spread. Price reaches resistance as the spread
+    doubles, then reverses. A market-maker trap that triggers buy stops at poor prices.
+  title_ar: 'السبريد: Rejection through an open spread. Price reaches resistance as
+    the spread doubles, then reverses. A market-maker trap that triggers buy stops
+    at poor prices.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.056
+  category: spread
+  title_en: Spread does not normalize after the candle closes. Spread staying wide
+    for more than 3 minutes after the explosive candle confirms that panic is still
+    in the market.
+  title_ar: 'السبريد: Spread does not normalize after the candle closes. Spread staying
+    wide for more than 3 minutes after the explosive candle confirms that panic is
+    still in the market.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.057
+  category: spread
+  title_en: Spread divergence between gold and currencies. Gold’s spread is 5 times
+    normal while EURUSD’s spread is normal. The news is specific to metals or to political
+    tension.
+  title_ar: 'السبريد: Spread divergence between gold and currencies. Gold’s spread
+    is 5 times normal while EURUSD’s spread is normal. The news is specific to metals
+    or to political tension.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.058
+  category: spread
+  title_en: High broken by the spread alone. A historical high is tagged only because
+    the Ask expanded, while the actual Bid never reached it, in order to liquidate
+    short positions.
+  title_ar: 'السبريد: High broken by the spread alone. A historical high is tagged
+    only because the Ask expanded, while the actual Bid never reached it, in order
+    to liquidate short positions.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.059
+  category: spread
+  title_en: Liquidity-vacuum slip. Gold’s candle falls with no opposing bids, so the
+    decline looks like a straight line with no resistance.
+  title_ar: 'السبريد: Liquidity-vacuum slip. Gold’s candle falls with no opposing
+    bids, so the decline looks like a straight line with no resistance.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.060
+  category: spread
+  title_en: Spread expansion together with a drop in intraday “voltage.” Prices pull
+    apart and candles hesitate in the minutes before the Fed Chair speaks.
+  title_ar: 'السبريد: Spread expansion together with a drop in intraday “voltage.”
+    Prices pull apart and candles hesitate in the minutes before the Fed Chair speaks.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.061
+  category: sync
+  title_en: Instant opposite explosion in DXY (mirror spike). A violent bullish gold
+    candle forms in the same second as an equally violent bearish candle on the dollar
+    index.
+  title_ar: 'التزامن: Instant opposite explosion in DXY (mirror spike). A violent
+    bullish gold candle forms in the same second as an equally violent bearish candle
+    on the dollar index.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.062
+  category: sync
+  title_en: US 10-year yield shock. 10-year yields move more than 1.5% up or down
+    at the moment the gold candle forms.
+  title_ar: 'التزامن: US 10-year yield shock. 10-year yields move more than 1.5% up
+    or down at the moment the gold candle forms.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.063
+  category: sync
+  title_en: Full sync with silver (XAGUSD). Gold’s candle speed matches silver’s candle
+    with more than 95% agreement in the same minute.
+  title_ar: 'التزامن: Full sync with silver (XAGUSD). Gold’s candle speed matches
+    silver’s candle with more than 95% agreement in the same minute.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.064
+  category: sync
+  title_en: Exceptional decoupling. Gold rockets and the dollar rockets in the same
+    candle. That is decisive evidence of war news or a severe banking crisis (absolute
+    safe haven).
+  title_ar: 'التزامن: Exceptional decoupling. Gold rockets and the dollar rockets
+    in the same candle. That is decisive evidence of war news or a severe banking
+    crisis (absolute safe haven).'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.065
+  category: sync
+  title_en: Equity decline with a gold rally. A giant bearish S&P 500 candle coincides
+    with a giant bullish gold candle (risk-off shock).
+  title_ar: 'التزامن: Equity decline with a gold rally. A giant bearish S&P 500 candle
+    coincides with a giant bullish gold candle (risk-off shock).'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.066
+  category: sync
+  title_en: Synchronized crude-oil jump. Gold and Brent explode in the same minute.
+    That is the fingerprint of geopolitical tension in the Middle East or in energy
+    supply.
+  title_ar: 'التزامن: Synchronized crude-oil jump. Gold and Brent explode in the same
+    minute. That is the fingerprint of geopolitical tension in the Middle East or
+    in energy supply.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.067
+  category: sync
+  title_en: USDJPY flash move. USDJPY moves 80 points in the same moment as the gold
+    candle. Confirmation of a shared US release (inflation or employment).
+  title_ar: 'التزامن: USDJPY flash move. USDJPY moves 80 points in the same moment
+    as the gold candle. Confirmation of a shared US release (inflation or employment).'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.068
+  category: sync
+  title_en: Industrial-metals response (copper). If gold moves alone while copper
+    is flat, the news is monetary or rates. If they move together, the news is about
+    global growth and PMI.
+  title_ar: 'التزامن: Industrial-metals response (copper). If gold moves alone while
+    copper is flat, the news is monetary or rates. If they move together, the news
+    is about global growth and PMI.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.069
+  category: sync
+  title_en: VIX spike. The fear and volatility index rises more than 5% within a few
+    minutes, together with the gold candle.
+  title_ar: 'التزامن: VIX spike. The fear and volatility index rises more than 5%
+    within a few minutes, together with the gold candle.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.070
+  category: sync
+  title_en: Sync with safe-haven currencies (franc and yen). Gold and the Swiss franc
+    rise together against other currencies, confirming the safe-haven character of
+    the news candle.
+  title_ar: 'التزامن: Sync with safe-haven currencies (franc and yen). Gold and the
+    Swiss franc rise together against other currencies, confirming the safe-haven
+    character of the news candle.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.071
+  category: sync
+  title_en: Central-bank float or intervention candle. Currency pairs linked to gold
+    move by record amounts because of direct central-bank intervention (for example
+    Bank of Japan intervention).
+  title_ar: 'التزامن: Central-bank float or intervention candle. Currency pairs linked
+    to gold move by record amounts because of direct central-bank intervention (for
+    example Bank of Japan intervention).'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.072
+  category: sync
+  title_en: Opposite crypto shock. Bitcoin and high-risk liquidity fall as gold’s
+    green candle explodes. Liquidity is leaving toward traditional assets.
+  title_ar: 'التزامن: Opposite crypto shock. Bitcoin and high-risk liquidity fall
+    as gold’s green candle explodes. Liquidity is leaving toward traditional assets.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.073
+  category: sync
+  title_en: Gold breaks together with euro-priced gold (XAUEUR). A historical high
+    on gold in both dollars and euros in the same candle means the move is not merely
+    dollar weakness.
+  title_ar: 'التزامن: Gold breaks together with euro-priced gold (XAUEUR). A historical
+    high on gold in both dollars and euros in the same candle means the move is not
+    merely dollar weakness.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.074
+  category: sync
+  title_en: Inflation-linked bond response (TIPS breakdown). A record drop in real
+    yields fuels a historical gold buy candle the moment CPI is released.
+  title_ar: 'التزامن: Inflation-linked bond response (TIPS breakdown). A record drop
+    in real yields fuels a historical gold buy candle the moment CPI is released.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.075
+  category: sync
+  title_en: Gold lags the currency reaction. A violent EURUSD move 10 seconds before
+    gold’s candle is an early signal to the agent that gold’s news candle is about
+    to print.
+  title_ar: 'التزامن: Gold lags the currency reaction. A violent EURUSD move 10 seconds
+    before gold’s candle is an early signal to the agent that gold’s news candle is
+    about to print.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.076
+  category: geometry
+  title_en: Two-horned spoon candle (expanding horn). A long upper wick, a long lower
+    wick, and a tiny body. The result of violent two-way news volatility.
+  title_ar: 'شكل الشمعة: Two-horned spoon candle (expanding horn). A long upper wick,
+    a long lower wick, and a tiny body. The result of violent two-way news volatility.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.077
+  category: geometry
+  title_en: Instant full engulfing flush. The candle breaks the prior high by 30 points,
+    then falls through the prior low and closes 50 points below it, inside the same
+    timeframe.
+  title_ar: 'شكل الشمعة: Instant full engulfing flush. The candle breaks the prior
+    high by 30 points, then falls through the prior low and closes 50 points below
+    it, inside the same timeframe.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.078
+  category: geometry
+  title_en: One-tailed rocket (exhaustion pin bar). The wick is more than 80% of a
+    total length greater than 150 points. The classic news-rejection pattern.
+  title_ar: 'شكل الشمعة: One-tailed rocket (exhaustion pin bar). The wick is more
+    than 80% of a total length greater than 150 points. The classic news-rejection
+    pattern.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.079
+  category: geometry
+  title_en: Small shadows disappear along the path. Shadows vanish entirely from consecutive
+    M1 and M5 candles. Institutional buy or sell pressure is continuous and allows
+    no correction.
+  title_ar: 'شكل الشمعة: Small shadows disappear along the path. Shadows vanish entirely
+    from consecutive M1 and M5 candles. Institutional buy or sell pressure is continuous
+    and allows no correction.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.080
+  category: geometry
+  title_en: Hollow tower candle. A vertical candle cuts through several technical
+    zones without pausing, leaving a complete liquidity imbalance behind it.
+  title_ar: 'شكل الشمعة: Hollow tower candle. A vertical candle cuts through several
+    technical zones without pausing, leaving a complete liquidity imbalance behind
+    it.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.081
+  category: geometry
+  title_en: Extreme outside bar. The candle’s range is above the highest high of the
+    last 5 candles and below the lowest low of those same candles.
+  title_ar: 'شكل الشمعة: Extreme outside bar. The candle’s range is above the highest
+    high of the last 5 candles and below the lowest low of those same candles.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.082
+  category: geometry
+  title_en: V-reversal attack. The one-minute candle falls 80 points, then the next
+    candle rises 100 points immediately. A fast flush before the upside path.
+  title_ar: 'شكل الشمعة: V-reversal attack. The one-minute candle falls 80 points,
+    then the next candle rises 100 points immediately. A fast flush before the upside
+    path.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.083
+  category: geometry
+  title_en: Body holds outside resistance with no correction. A 15-minute candle closes
+    entirely above solid resistance with no upper wick. That is news thrust.
+  title_ar: 'شكل الشمعة: Body holds outside resistance with no correction. A 15-minute
+    candle closes entirely above solid resistance with no upper wick. That is news
+    thrust.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.084
+  category: geometry
+  title_en: Three merged news candles (3-bar cascade). Three M5 candles in a row with
+    the same size, momentum, and direction, and almost no wicks. This is rare and
+    happens after major data.
+  title_ar: 'شكل الشمعة: Three merged news candles (3-bar cascade). Three M5 candles
+    in a row with the same size, momentum, and direction, and almost no wicks. This
+    is rare and happens after major data.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.085
+  category: geometry
+  title_en: Simultaneous break of trendlines and levels. One candle breaks a descending
+    trendline, a horizontal resistance, and a Fibonacci level at the same time.
+  title_ar: 'شكل الشمعة: Simultaneous break of trendlines and levels. One candle breaks
+    a descending trendline, a horizontal resistance, and a Fibonacci level at the
+    same time.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.086
+  category: geometry
+  title_en: Oversized doji. A 200-point range whose close matches its open exactly.
+    A brutal fight between bulls and bears during the statement.
+  title_ar: 'شكل الشمعة: Oversized doji. A 200-point range whose close matches its
+    open exactly. A brutal fight between bulls and bears during the statement.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.087
+  category: geometry
+  title_en: Fake rising hanging candle. The candle rallies hard to a high, then collapses
+    in the last 10 seconds, leaving a giant wick and a small red body at the bottom.
+  title_ar: 'شكل الشمعة: Fake rising hanging candle. The candle rallies hard to a
+    high, then collapses in the last 10 seconds, leaving a giant wick and a small
+    red body at the bottom.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.088
+  category: geometry
+  title_en: Intraday breakaway tick gap. The next one-minute candle opens 15 points
+    above the prior close inside the live market, with no daily close involved.
+  title_ar: 'شكل الشمعة: Intraday breakaway tick gap. The next one-minute candle opens
+    15 points above the prior close inside the live market, with no daily close involved.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.089
+  category: geometry
+  title_en: Asian range taken in one pulse. One candle sweeps the entire Tokyo-session
+    range in the first minute of the New York open.
+  title_ar: 'شكل الشمعة: Asian range taken in one pulse. One candle sweeps the entire
+    Tokyo-session range in the first minute of the New York open.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.090
+  category: geometry
+  title_en: Marubozu on higher timeframes. A full H4 candle becomes a driving marubozu
+    because a sequence of aligned headlines stacked together.
+  title_ar: 'شكل الشمعة: Marubozu on higher timeframes. A full H4 candle becomes a
+    driving marubozu because a sequence of aligned headlines stacked together.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.091
+  category: breaking
+  title_en: Abnormal midnight candle (Asian midnight flash). A move of more than 100
+    points on gold during the quietest hours (early Asia) is decisive evidence of
+    military news or an emergency statement.
+  title_ar: 'الأخبار العاجلة: Abnormal midnight candle (Asian midnight flash). A move
+    of more than 100 points on gold during the quietest hours (early Asia) is decisive
+    evidence of military news or an emergency statement.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.092
+  category: breaking
+  title_en: Temporary trading-halt candle. A Chicago Mercantile Exchange circuit breaker
+    that freezes gold futures for minutes shows up on the spot chart as frozen ticks,
+    then a huge price jump.
+  title_ar: 'الأخبار العاجلة: Temporary trading-halt candle. A Chicago Mercantile
+    Exchange circuit breaker that freezes gold futures for minutes shows up on the
+    spot chart as frozen ticks, then a huge price jump.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.093
+  category: breaking
+  title_en: Weekend news gap. Monday’s first candle opens with a gap larger than 150
+    points because of political events while markets were closed.
+  title_ar: 'الأخبار العاجلة: Weekend news gap. Monday’s first candle opens with a
+    gap larger than 150 points because of political events while markets were closed.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.094
+  category: breaking
+  title_en: Warning and military-strike candle. A vertical bullish candle with record
+    buy volume appears as soon as reports of a military attack or a closed shipping
+    strait circulate.
+  title_ar: 'الأخبار العاجلة: Warning and military-strike candle. A vertical bullish
+    candle with record buy volume appears as soon as reports of a military attack
+    or a closed shipping strait circulate.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.095
+  category: breaking
+  title_en: Silent candles, then a sudden explosion. Price is completely still, then
+    launches 80 points in one candle with nothing on the economic calendar. That is
+    the fingerprint of a breaking wire headline.
+  title_ar: 'الأخبار العاجلة: Silent candles, then a sudden explosion. Price is completely
+    still, then launches 80 points in one candle with nothing on the economic calendar.
+    That is the fingerprint of a breaking wire headline.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.096
+  category: breaking
+  title_en: Presidential intervention or economic-sanctions candle. Candles caused
+    by sudden tariff announcements or international sanctions packages that affect
+    gold and metals trade.
+  title_ar: 'الأخبار العاجلة: Presidential intervention or economic-sanctions candle.
+    Candles caused by sudden tariff announcements or international sanctions packages
+    that affect gold and metals trade.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.097
+  category: breaking
+  title_en: Fast banking-collapse candle. A drop in regional-bank shares produces
+    a panic-buying candle on gold as an immediate refuge from systemic risk.
+  title_ar: 'الأخبار العاجلة: Fast banking-collapse candle. A drop in regional-bank
+    shares produces a panic-buying candle on gold as an immediate refuge from systemic
+    risk.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.098
+  category: breaking
+  title_en: Reverse reaction to a political calming. Gold collapses on a giant bearish
+    candle the moment an official statement announces a ceasefire or the end of a
+    diplomatic crisis.
+  title_ar: 'الأخبار العاجلة: Reverse reaction to a political calming. Gold collapses
+    on a giant bearish candle the moment an official statement announces a ceasefire
+    or the end of a diplomatic crisis.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.099
+  category: breaking
+  title_en: Sudden sovereign-downgrade candle. Gold ignites after a major rating agency
+    cuts the United States’ sovereign credit rating.
+  title_ar: 'الأخبار العاجلة: Sudden sovereign-downgrade candle. Gold ignites after
+    a major rating agency cuts the United States’ sovereign credit rating.'
+  type: heuristic
+  params: {}
+  default_enabled: true
+  weight: 1
+- id: candle.100
+  category: breaking
+  title_en: Reference rule for deciding that a candle is news. If ATR has tripled,
+    tick volume has jumped hard, and the spread has widened suddenly, the agent classifies
+    the candle as an “inevitable news candle” and immediately arms the news-shield
+    and protection protocol, whether the event was on the calendar or was a surprise.
+  title_ar: 'الأخبار العاجلة: Reference rule for deciding that a candle is news. If
+    ATR has tripled, tick volume has jumped hard, and the spread has widened suddenly,
+    the agent classifies the candle as an “inevitable news candle” and immediately
+    arms the news-shield and protection protocol, whether the event was on the calendar
+    or was a surprise.'
+  type: detector
+  params: {}
+  default_enabled: true
+  weight: 1
