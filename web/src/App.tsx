@@ -1,83 +1,224 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { NavLink, Route, Routes, useNavigate } from "react-router-dom";
-import { api, setToken, token } from "./api";
+import { NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { api, clearToken, setToken, token } from "./api";
 import { applyDirection } from "./i18n";
-import { Approvals, Activity, Agents, ChartPage, Chat, Dashboard, Debate, Journal, Lessons, News, Reports, Rules, Settings, Signals, Skills } from "./screens";
+import { flag, setFlag, displayName } from "./profile";
+import { Activity, Agents, Approvals, ChartPage, Chat, Dashboard, Debate, Journal, Lessons, News, Reports, Rules, Settings, Signals, Skills } from "./screens";
 
-const links = [
+const primary = [
   ["/", "nav.dashboard"],
-  ["/chat", "nav.chat"],
-  ["/activity", "nav.activity"],
-  ["/agents", "nav.tree"],
   ["/debate", "nav.debate"],
   ["/chart", "nav.charts"],
   ["/signals", "nav.signals"],
   ["/approvals", "nav.approvals"],
+  ["/journal", "nav.journal"],
+  ["/settings", "nav.settings"],
+] as const;
+
+const secondary = [
+  ["/activity", "nav.activity"],
+  ["/agents", "nav.tree"],
   ["/skills", "nav.skills"],
   ["/rules", "nav.rules"],
   ["/news", "nav.news"],
-  ["/journal", "nav.journal"],
   ["/lessons", "nav.lessons"],
   ["/reports", "nav.reports"],
-  ["/settings", "nav.settings"],
 ] as const;
 
 export default function App() {
   const { t, i18n } = useTranslation();
   const [authed, setAuthed] = useState(Boolean(token()));
   const navigate = useNavigate();
+  const location = useLocation();
+  const [drawer, setDrawer] = useState(false);
+  const [sheet, setSheet] = useState<"account" | "attach" | null>(null);
+  const [query, setQuery] = useState("");
+  const [name, setName] = useState(displayName());
+  const [includeMarket, setIncludeMarket] = useState(flag("mokli-market", true));
+  const [includeNews, setIncludeNews] = useState(flag("mokli-news", true));
+  const chat = location.pathname === "/chat";
 
   useEffect(() => {
     applyDirection(i18n.language);
   }, [i18n.language]);
 
+  useEffect(() => {
+    const refresh = () => setName(displayName());
+    window.addEventListener("mokli-profile", refresh);
+    return () => window.removeEventListener("mokli-profile", refresh);
+  }, []);
+
+  const links = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    const all = [...primary, ...secondary];
+    if (!needle) return { main: [...primary], more: [...secondary] };
+    const match = all.filter(([, key]) => t(key).toLowerCase().includes(needle) || key.toLowerCase().includes(needle));
+    return { main: match, more: [] as [string, string][] };
+  }, [query, t]);
+
   if (!authed) {
-    return <Login onSuccess={() => { setAuthed(true); navigate("/"); }} />;
+    return <Login onSuccess={() => { setAuthed(true); navigate("/chat"); }} />;
+  }
+
+  function go(path: string) {
+    setDrawer(false);
+    setSheet(null);
+    navigate(path);
   }
 
   return (
-    <div className="min-h-screen md:grid md:grid-cols-[220px_1fr]">
-      <aside className="border-b border-[var(--line)] bg-[var(--surface)] p-4 md:border-b-0 md:border-e">
-        <div className="mb-4">
-          <div className="text-lg font-semibold text-[var(--gold)]">{t("app")}</div>
-          <div className="text-xs text-[var(--muted)]">{t("tagline")}</div>
+    <div className="shell">
+      <aside className="drawer" data-open={drawer ? "true" : "false"}>
+        <div className="mb-5 flex items-center justify-between">
+          <div className="text-2xl font-medium">{t("app")}</div>
+          <span className="pill">{t("paper")}</span>
         </div>
-        <nav className="flex max-w-full gap-2 overflow-x-auto md:flex-col">
-          {links.map(([path, key]) => (
-            <NavLink
-              key={path}
-              to={path}
-              end={path === "/"}
-              className={({ isActive }) =>
-                `rounded-full px-3 py-2 text-sm whitespace-nowrap ${isActive ? "bg-[var(--card)] text-[var(--gold)]" : "text-[var(--muted)]"}`
-              }
-            >
-              {t(key)}
+        <button className="side-link" type="button" onClick={() => { window.dispatchEvent(new Event("mokli-new-chat")); go("/chat"); }}>
+          <span aria-hidden="true">+</span>
+          <span>{t("newChat")}</span>
+        </button>
+        <label className="mt-2 block">
+          <input className="field" placeholder={t("search")} value={query} onChange={(event) => setQuery(event.target.value)} />
+        </label>
+        <nav className="mt-3 flex-1 overflow-auto">
+          {links.main.map(([path, key]) => (
+            <NavLink key={path} to={path} end={path === "/"} className="side-link" data-active={location.pathname === path ? "true" : "false"} onClick={() => setDrawer(false)}>
+              <span>{t(key)}</span>
+            </NavLink>
+          ))}
+          {links.more.length > 0 && <div className="my-3 border-t border-[var(--line)]" />}
+          {links.more.map(([path, key]) => (
+            <NavLink key={path} to={path} className="side-link" data-active={location.pathname === path ? "true" : "false"} onClick={() => setDrawer(false)}>
+              <span className="text-[var(--muted)]">{t(key)}</span>
             </NavLink>
           ))}
         </nav>
+        <button className="side-link" type="button" onClick={() => go("/settings")}>
+          <span className="flex items-center gap-3">
+            <span className="avatar small">{name.slice(0, 1).toUpperCase()}</span>
+            <span>
+              <span className="latin">{name}</span>
+              <span className="block text-xs text-[var(--muted)]">{t("paper")}</span>
+            </span>
+          </span>
+        </button>
       </aside>
-      <main className="min-w-0 p-4 md:p-6">
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/activity" element={<Activity />} />
-          <Route path="/agents" element={<Agents />} />
-          <Route path="/debate" element={<Debate />} />
-          <Route path="/chart" element={<ChartPage />} />
-          <Route path="/signals" element={<Signals />} />
-          <Route path="/approvals" element={<Approvals />} />
-          <Route path="/skills" element={<Skills />} />
-          <Route path="/rules" element={<Rules />} />
-          <Route path="/news" element={<News />} />
-          <Route path="/journal" element={<Journal />} />
-          <Route path="/lessons" element={<Lessons />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/settings" element={<Settings />} />
-        </Routes>
-      </main>
+      {drawer && <button className="backdrop drawer-backdrop" type="button" aria-label={t("close")} onClick={() => setDrawer(false)} />}
+      <div className="column">
+        <header className="topbar">
+          <button className="icon-btn menu-btn" type="button" aria-label={t("menu")} onClick={() => setDrawer(true)}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M5 7h14M5 12h14M5 17h10" /></svg>
+          </button>
+          <button className="pill" type="button" onClick={() => setSheet("account")}>{t("paper")}</button>
+          <button className="icon-btn" type="button" aria-label={t("account")} onClick={() => setSheet("account")}>
+            <span className="avatar small">{name.slice(0, 1).toUpperCase()}</span>
+          </button>
+        </header>
+        <main className={chat ? "stage" : "stage stage-pad"}>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/chat" element={<Chat openAttach={() => setSheet("attach")} includeMarket={includeMarket} includeNews={includeNews} />} />
+            <Route path="/activity" element={<Activity />} />
+            <Route path="/agents" element={<Agents />} />
+            <Route path="/debate" element={<Debate />} />
+            <Route path="/chart" element={<ChartPage />} />
+            <Route path="/signals" element={<Signals />} />
+            <Route path="/approvals" element={<Approvals />} />
+            <Route path="/skills" element={<Skills />} />
+            <Route path="/rules" element={<Rules />} />
+            <Route path="/news" element={<News />} />
+            <Route path="/journal" element={<Journal />} />
+            <Route path="/lessons" element={<Lessons />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/settings" element={<Settings />} />
+          </Routes>
+        </main>
+      </div>
+      {sheet === "account" && (
+        <Sheet title={t("account")} onClose={() => setSheet(null)}>
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <div className="text-lg"><span className="latin">{name}</span></div>
+              <div className="text-sm text-[var(--muted)]">{t("paper")}</div>
+            </div>
+            <span className="avatar small">{name.slice(0, 1).toUpperCase()}</span>
+          </div>
+          <button className="sheet-row" type="button" onClick={() => go("/settings")}><span>{t("nav.settings")}</span></button>
+          <button className="sheet-row" type="button" onClick={() => go("/journal")}><span>{t("memory")}</span></button>
+          <label className="sheet-row">
+            <span>{t("language")}</span>
+            <select className="field" style={{ width: "auto" }} value={i18n.language} onChange={async (event) => {
+              const language = event.target.value;
+              await i18n.changeLanguage(language);
+              applyDirection(language);
+              await api("/api/settings", { method: "PUT", body: JSON.stringify({ language }) });
+            }}>
+              <option value="ar">العربية</option>
+              <option value="en">English</option>
+            </select>
+          </label>
+          <button className="sheet-row" type="button" onClick={() => { clearToken(); setAuthed(false); }}><span>{t("logout")}</span></button>
+        </Sheet>
+      )}
+      {sheet === "attach" && (
+        <Sheet title={t("attachTitle")} onClose={() => setSheet(null)}>
+          <div className="tiles">
+            <FileTile label={t("files")} accept="*/*" onFile={(file) => attachFile(file)} />
+            <FileTile label={t("photos")} accept="image/*" onFile={(file) => attachFile(file)} />
+            <FileTile label={t("camera")} accept="image/*" capture onFile={(file) => attachFile(file)} />
+          </div>
+          <Toggle label={t("priceContext")} on={includeMarket} onChange={(on) => { setIncludeMarket(on); setFlag("mokli-market", on); }} />
+          <Toggle label={t("newsContext")} on={includeNews} onChange={(on) => { setIncludeNews(on); setFlag("mokli-news", on); }} />
+          <p className="mt-2 text-xs text-[var(--muted)]">{t("attachNote")}</p>
+        </Sheet>
+      )}
     </div>
+  );
+}
+
+function attachFile(file: File) {
+  const line = `${file.type.startsWith("image/") ? "image" : "file"}: ${file.name}`;
+  window.dispatchEvent(new CustomEvent("mokli-draft", { detail: line }));
+}
+
+function Sheet({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+  return (
+    <>
+      <button className="backdrop" type="button" aria-label={title} onClick={onClose} />
+      <section className="sheet" role="dialog" aria-label={title}>
+        <div className="grabber" />
+        <h2>{title}</h2>
+        {children}
+      </section>
+    </>
+  );
+}
+
+function Toggle({ label, on, onChange }: { label: string; on: boolean; onChange: (on: boolean) => void }) {
+  return (
+    <button className="toggle" type="button" onClick={() => onChange(!on)}>
+      <span>{label}</span>
+      <span className="switch" data-on={on ? "true" : "false"}><i /></span>
+    </button>
+  );
+}
+
+function FileTile({ label, accept, capture, onFile }: { label: string; accept: string; capture?: boolean; onFile: (file: File) => void }) {
+  return (
+    <label className="tile">
+      <span>{label}</span>
+      <input
+        className="hidden"
+        type="file"
+        accept={accept}
+        capture={capture ? "environment" : undefined}
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) onFile(file);
+        }}
+      />
+    </label>
   );
 }
 
@@ -87,7 +228,7 @@ function Login({ onSuccess }: { onSuccess: () => void }) {
   const [error, setError] = useState("");
   return (
     <form
-      className="mx-auto mt-24 w-[min(100%-2rem,380px)] rounded-[var(--radius)] border border-[var(--line)] bg-[var(--card)] p-6 shadow-[var(--shadow)]"
+      className="mx-auto mt-24 w-[min(100%-2rem,380px)] card p-6"
       onSubmit={async (event) => {
         event.preventDefault();
         try {
@@ -102,19 +243,12 @@ function Login({ onSuccess }: { onSuccess: () => void }) {
         }
       }}
     >
-      <h1 className="mb-1 text-2xl text-[var(--gold)]">{t("app")}</h1>
+      <h1 className="mb-1 text-2xl">{t("app")}</h1>
       <p className="mb-4 text-sm text-[var(--muted)]">{t("tagline")}</p>
       <label className="mb-2 block text-sm">{t("passphrase")}</label>
-      <input
-        className="mb-4 w-full rounded-lg border border-[var(--line)] bg-[var(--bg)] px-3 py-2"
-        type="password"
-        value={passphrase}
-        onChange={(event) => setPassphrase(event.target.value)}
-      />
+      <input className="field mb-4" type="password" value={passphrase} onChange={(event) => setPassphrase(event.target.value)} />
       {error && <p className="mb-2 text-sm text-[var(--sell)]">{error}</p>}
-      <button className="w-full rounded-lg bg-[var(--gold)] px-3 py-2 font-medium text-black" type="submit">
-        {t("login")}
-      </button>
+      <button className="quiet w-full" type="submit">{t("login")}</button>
     </form>
   );
 }

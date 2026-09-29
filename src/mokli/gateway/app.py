@@ -87,6 +87,8 @@ class LoginBody(BaseModel):
 class ChatBody(BaseModel):
     message: str
     session_id: str = "main"
+    include_market: bool = True
+    include_news: bool = False
 
 
 class VoiceBody(BaseModel):
@@ -372,9 +374,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             session.add(Message(session_id=body.session_id, role="user", body=body.message))
             session.commit()
         snapshot = "UNAVAILABLE"
-        if hub.candles:
+        if body.include_market and hub.candles:
             last = hub.candles[-1]
             snapshot = f"close={last.close} source={last.source}"
+        if body.include_news:
+            phase = news_state(datetime.now(timezone.utc), hub.event_time).phase.value
+            snapshot = f"{snapshot} news={phase}"
         provider = hub.setting("active_provider", hub.settings.active_provider)
         outcome = await run_selected(
             hub.settings,

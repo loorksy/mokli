@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "./api";
 import { applyDirection } from "./i18n";
-import { Notifications, VoicePanel } from "./panels";
+import { Notifications, useVoiceSession } from "./panels";
+import { displayName, setDisplayName } from "./profile";
 
 export { Activity, Agents, Journal, News, Reports, Signals } from "./panels";
 
@@ -36,7 +37,7 @@ type Dash = {
 
 function Card({ title, value }: { title: string; value: string }) {
   return (
-    <div className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--card)] p-4 shadow-[var(--shadow)]">
+    <div className="card p-4">
       <div className="text-xs text-[var(--muted)]">{title}</div>
       <div className="mt-1 whitespace-pre-line break-words text-lg leading-snug">{value}</div>
     </div>
@@ -54,13 +55,14 @@ export function Dashboard() {
   const book = data?.book;
   const open = (data?.broker.positions || []).filter((item) => item.status === "open");
   return (
-    <section className="space-y-4">
+    <section className="mx-auto w-full max-w-3xl space-y-4">
+      <h1 className="screen-title">{t("nav.dashboard")}</h1>
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <button className="rounded-lg bg-[var(--gold)] px-3 py-2 text-sm text-black" onClick={async () => { await api("/api/market/replay/synthetic", { method: "POST" }); setNote("SIMULATOR"); await load(); }}>{t("loadReplay")}</button>
-        <button className="rounded-lg border border-[var(--line)] px-3 py-2 text-sm" onClick={async () => { try { await api("/api/market/replay/arm?start=40", { method: "POST" }); setNote("SIMULATOR"); } catch { setNote("UNAVAILABLE"); } await load(); }}>{t("arm")}</button>
-        <button className="rounded-lg border border-[var(--line)] px-3 py-2 text-sm" onClick={async () => { try { await api("/api/market/replay/step", { method: "POST" }); } catch { setNote("UNAVAILABLE"); } await load(); }}>{t("step")}</button>
-        <button className="rounded-lg border border-[var(--line)] px-3 py-2 text-sm" onClick={async () => { await api("/api/cycle", { method: "POST" }); await load(); }}>{t("runCycle")}</button>
-        <button className="rounded-lg bg-[var(--danger)] px-3 py-2 text-sm text-white" onClick={async () => { await api("/api/broker/kill", { method: "POST" }); await load(); }}>{t("kill")}</button>
+        <button className="quiet" onClick={async () => { await api("/api/market/replay/synthetic", { method: "POST" }); setNote("SIMULATOR"); await load(); }}>{t("loadReplay")}</button>
+        <button className="quiet" onClick={async () => { try { await api("/api/market/replay/arm?start=40", { method: "POST" }); setNote("SIMULATOR"); } catch { setNote("UNAVAILABLE"); } await load(); }}>{t("arm")}</button>
+        <button className="quiet" onClick={async () => { try { await api("/api/market/replay/step", { method: "POST" }); } catch { setNote("UNAVAILABLE"); } await load(); }}>{t("step")}</button>
+        <button className="quiet" onClick={async () => { await api("/api/cycle", { method: "POST" }); await load(); }}>{t("runCycle")}</button>
+        <button className="quiet danger" onClick={async () => { await api("/api/broker/kill", { method: "POST" }); await load(); }}>{t("kill")}</button>
       </div>
       {note && <p className="mb-3 text-sm text-[var(--gold)]">{note}</p>}
       {book && (
@@ -114,43 +116,110 @@ type ChatReply = {
   tools: string[];
 };
 
-export function Chat() {
-  const { t } = useTranslation();
+export function Chat({ openAttach, includeMarket, includeNews }: { openAttach: () => void; includeMarket: boolean; includeNews: boolean }) {
+  const { t, i18n } = useTranslation();
   const [text, setText] = useState("");
   const [lines, setLines] = useState<{ role: string; body: string; meta?: ChatReply }[]>([]);
+  const [name, setName] = useState(displayName());
+  const voice = useVoiceSession();
+  useEffect(() => {
+    const onDraft = (event: Event) => {
+      const detail = (event as CustomEvent<string>).detail;
+      setText((current) => current ? `${current}\n${detail}` : detail);
+    };
+    const onNew = () => { setLines([]); setText(""); };
+    const onProfile = () => setName(displayName());
+    window.addEventListener("mokli-draft", onDraft);
+    window.addEventListener("mokli-new-chat", onNew);
+    window.addEventListener("mokli-profile", onProfile);
+    return () => {
+      window.removeEventListener("mokli-draft", onDraft);
+      window.removeEventListener("mokli-new-chat", onNew);
+      window.removeEventListener("mokli-profile", onProfile);
+    };
+  }, []);
+  const day = new Date().getDay();
+  const greet = i18n.language === "ar"
+    ? ["أحد سعيد", "اثنين سعيد", "ثلاثاء سعيد", "أربعاء سعيد", "خميس سعيد", "جمعة سعيدة", "سبت سعيد"][day]
+    : ["Happy Sunday", "Happy Monday", "Happy Tuesday", "Happy Wednesday", "Happy Thursday", "Happy Friday", "Happy Saturday"][day];
   return (
-    <section className="mx-auto max-w-3xl space-y-4">
-      <VoicePanel />
-      <div className="space-y-2">
-        {lines.length === 0 && <p className="text-[var(--muted)]">{t("empty")}</p>}
-        {lines.map((line, index) => (
-          <div key={index} className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--card)] p-3 text-sm">
+    <section className="chat-stage">
+      <div className="chat-log">
+      <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4">
+        {lines.length === 0 ? (
+          <div className="greeting">
+            <CamelMark />
+            <h1>{greet}، <span className="latin">{name}</span></h1>
+          </div>
+        ) : lines.map((line, index) => (
+          <article key={index} className="py-3 text-[17px] leading-7">
             {line.meta && (
-              <div className="mb-2 text-xs text-[var(--muted)]">
-                <div>{line.meta.agent}</div>
-                <div>{line.meta.provider}</div>
-                <div>{line.meta.model}</div>
-                <div>{line.meta.runtime}</div>
-                <div>● {line.meta.status}</div>
-                <div>{t("tools")}: {line.meta.tools.join(", ") || "—"}</div>
-              </div>
+              <p className="mb-1 text-xs text-[var(--muted)]">
+                <span className="latin">{line.meta.agent}</span>
+                {" · "}
+                <span className="latin">{line.meta.provider}</span>
+                {" · "}
+                <span className="latin">{line.meta.model}</span>
+                {" · "}
+                <span className="latin">{line.meta.runtime}</span>
+              </p>
             )}
             {line.body}
-          </div>
+          </article>
         ))}
       </div>
-      <form className="flex gap-2" onSubmit={async (event) => {
+      </div>
+      {(voice.state !== "idle" || !voice.local) && (
+        <p className="px-4 text-center text-sm text-[var(--muted)]">
+          {!voice.local ? t("voiceLocal") : t(`voiceState.${voice.state}`)}
+          {voice.snap?.reply ? ` · ${voice.snap.reply}` : ""}
+        </p>
+      )}
+      <form className="composer" onSubmit={async (event) => {
         event.preventDefault();
-        const message = text;
+        const message = text.trim();
+        if (!message) return;
         setText("");
         setLines((current) => [...current, { role: "user", body: message }]);
-        const reply = await api<ChatReply>("/api/chat", { method: "POST", body: JSON.stringify({ message }) });
+        const reply = await api<ChatReply>("/api/chat", {
+          method: "POST",
+          body: JSON.stringify({ message, include_market: includeMarket, include_news: includeNews }),
+        });
         setLines((current) => [...current, { role: "mokli", body: reply.text, meta: reply }]);
       }}>
-        <input className="min-w-0 flex-1 rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 py-2" value={text} onChange={(event) => setText(event.target.value)} />
-        <button className="rounded-lg bg-[var(--gold)] px-3 py-2 text-black" type="submit">{t("send")}</button>
+        <button className="plus" type="button" aria-label={t("attachTitle")} onClick={openAttach}>+</button>
+        <input dir="auto" placeholder={t("composer")} value={text} onChange={(event) => setText(event.target.value)} />
+        <button
+          className="mic"
+          data-hot={voice.state === "speaking" ? "true" : "false"}
+          type="button"
+          aria-label={voice.state === "speaking" ? t("barge") : t("talk")}
+          onClick={() => { if (voice.state === "speaking") void voice.barge(); else void voice.open(); }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="9" y="3" width="6" height="11" rx="3" />
+            <path d="M6 11a6 6 0 0 0 12 0M12 17v4" />
+          </svg>
+        </button>
       </form>
     </section>
+  );
+}
+
+function CamelMark() {
+  return (
+    <svg className="camel" viewBox="0 0 96 56" aria-hidden="true">
+      <rect x="22" y="40" width="5" height="12" rx="1.5" fill="currentColor" />
+      <rect x="32" y="40" width="5" height="12" rx="1.5" fill="currentColor" />
+      <rect x="50" y="40" width="5" height="12" rx="1.5" fill="currentColor" />
+      <rect x="60" y="40" width="5" height="12" rx="1.5" fill="currentColor" />
+      <ellipse cx="42" cy="36" rx="26" ry="10" fill="currentColor" />
+      <ellipse cx="50" cy="26" rx="14" ry="9" fill="currentColor" />
+      <path d="M64 30c8-2 12-10 10-18" stroke="currentColor" strokeWidth="5" fill="none" strokeLinecap="round" />
+      <ellipse cx="78" cy="12" rx="9" ry="5" fill="currentColor" />
+      <circle cx="44" cy="14" r="3.2" fill="currentColor" />
+      <path d="M44 17v7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
   );
 }
 
@@ -158,15 +227,16 @@ export function Debate() {
   const { t } = useTranslation();
   const [notes, setNotes] = useState<{ role: string; text: string }[]>([]);
   return (
-    <section>
-      <button className="mb-3 rounded-lg bg-[var(--gold)] px-3 py-2 text-sm text-black" onClick={async () => {
+    <section className="mx-auto w-full max-w-3xl">
+      <h1 className="screen-title">{t("nav.debate")}</h1>
+      <button className="quiet mb-3" onClick={async () => {
         const cycle = await api<{ notes: { role: string; text: string }[] }>("/api/cycle", { method: "POST" });
         setNotes(cycle.notes || []);
       }}>{t("runCycle")}</button>
       {notes.length === 0 && <p className="text-[var(--muted)]">{t("empty")}</p>}
       <div className="grid gap-3 md:grid-cols-2">
         {notes.map((note) => (
-          <article key={note.role} className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--card)] p-4">
+          <article key={note.role} className="card p-4">
             <h3 className="mb-1 text-[var(--gold)]">{note.role}</h3>
             <p className="text-sm">{note.text}</p>
           </article>
@@ -191,8 +261,8 @@ export function ChartPage() {
         autoSize: true,
         rightPriceScale: { minimumWidth: 72 },
         localization: { locale: "en-US" },
-        layout: { attributionLogo: false, background: { type: ColorType.Solid, color: "#12161d" }, textColor: "#ece8e1" },
-        grid: { vertLines: { color: "#2c3444" }, horzLines: { color: "#2c3444" } },
+        layout: { attributionLogo: false, background: { type: ColorType.Solid, color: "#1c1c1e" }, textColor: "#f3f3f4" },
+        grid: { vertLines: { color: "#2a2a2c" }, horzLines: { color: "#2a2a2c" } },
       });
       series = chart.addSeries(CandlestickSeries, { upColor: "#2fbf8a", downColor: "#e15d66", borderVisible: false, wickUpColor: "#2fbf8a", wickDownColor: "#e15d66" });
       const rows: CandlestickData[] = payload.candles.map((candle) => ({
@@ -209,8 +279,8 @@ export function ChartPage() {
     return () => { dead = true; chart?.remove(); };
   }, []);
   return (
-    <section>
-      <p className="mb-2 text-sm text-[var(--muted)]">{t("nav.charts")}</p>
+    <section className="mx-auto w-full max-w-4xl">
+      <h1 className="screen-title">{t("nav.charts")}</h1>
       <div ref={ref} dir="ltr" className="chart-ltr h-[320px] w-full rounded-[var(--radius)] border border-[var(--line)] md:h-[420px]" />
     </section>
   );
@@ -225,14 +295,15 @@ export function Approvals() {
   }
   useEffect(() => { void load(); }, []);
   return (
-    <section className="space-y-3">
+    <section className="mx-auto w-full max-w-3xl space-y-3">
+      <h1 className="screen-title">{t("nav.approvals")}</h1>
       {rows.length === 0 && <p className="text-[var(--muted)]">{t("empty")}</p>}
       {rows.map((row) => (
-        <article key={row.id} className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--card)] p-4">
-          <p>{row.payload.side} @ {row.payload.entry}</p>
+        <article key={row.id} className="card p-4">
+          <p><span className="latin">{row.payload.side}</span> @ <span className="latin">{row.payload.entry}</span></p>
           <div className="mt-2 flex gap-2">
-            <button className="rounded-lg bg-[var(--buy)] px-3 py-1 text-sm text-black" onClick={async () => { await api(`/api/approvals/${row.id}/approve`, { method: "POST" }); await load(); }}>{t("approve")}</button>
-            <button className="rounded-lg bg-[var(--sell)] px-3 py-1 text-sm" onClick={async () => { await api(`/api/approvals/${row.id}/reject`, { method: "POST" }); await load(); }}>{t("reject")}</button>
+            <button className="quiet" style={{ color: "var(--buy)" }} onClick={async () => { await api(`/api/approvals/${row.id}/approve`, { method: "POST" }); await load(); }}>{t("approve")}</button>
+            <button className="quiet" style={{ color: "var(--sell)" }} onClick={async () => { await api(`/api/approvals/${row.id}/reject`, { method: "POST" }); await load(); }}>{t("reject")}</button>
           </div>
         </article>
       ))}
@@ -303,6 +374,7 @@ export function Settings() {
   const [providers, setProviders] = useState<ProviderRow[]>([]);
   const [orders, setOrders] = useState("paper");
   const [meta, setMeta] = useState("");
+  const [name, setName] = useState(displayName());
   useEffect(() => {
     void api<{ live_confirmed: boolean; capabilities: string[]; providers: ProviderRow[] }>("/api/settings").then((body) => {
       setLive(body.live_confirmed);
@@ -315,8 +387,13 @@ export function Settings() {
     });
   }, []);
   return (
-    <section className="max-w-3xl space-y-4">
-      <div className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--card)] p-4 text-sm">
+    <section className="mx-auto w-full max-w-lg space-y-4">
+      <h1 className="screen-title">{t("nav.settings")}</h1>
+      <div className="avatar">{name.slice(0, 1).toUpperCase()}</div>
+      <label className="block text-sm text-[var(--muted)]">{t("name")}</label>
+      <input className="field latin" value={name} onChange={(event) => setName(event.target.value)} />
+      <button className="quiet w-full" type="button" onClick={() => setDisplayName(name)}>{t("saveProfile")}</button>
+      <div className="card p-4 text-sm">
         <div className="mb-2 text-[var(--muted)]">{t("runtime")}</div>
         <div>{capabilities.join(" · ") || "—"}</div>
         <p className="mt-3 text-[var(--gold)]">{t("ordersPaper")} {orders}</p>
@@ -333,7 +410,7 @@ export function Settings() {
         ))}
       </div>
       <label className="block text-sm">{t("language")}</label>
-      <select className="rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 py-2" value={i18n.language} onChange={async (event) => {
+      <select className="field" value={i18n.language} onChange={async (event) => {
         const language = event.target.value;
         await i18n.changeLanguage(language);
         applyDirection(language);

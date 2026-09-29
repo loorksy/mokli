@@ -2,7 +2,7 @@
 
 Recorded where the product brief left a choice open. Each item is the option the code follows.
 
-1. UI screenshots were not in the repository or the task attachments. The interface uses the tokens in `docs/DESIGN_TOKENS.md`: a dark desk, gold accent, IBM Plex Sans and IBM Plex Sans Arabic. It is dense like a personal control surface, and every screen that was not pictured uses that same language.
+1. The attached reference is a dark Arabic chat app. Mokli copies its craft: near-black ground, large calm type, thin rounded cards, pills, a bottom composer, a side list, and sheet menus. It does not copy that app's name, ghost mark, upgrade marketing, or sample tools. The empty chat uses an original camel silhouette, not their logo. The display name defaults to Ahmed and stays editable. Latin names stay left-to-right inside Arabic. Gold remains the trading accent, used sparingly.
 
 2. `docs/SPEC_AR.md` in this repository is an English translation. Rule `title_ar` values prefix the English sentence with an Arabic category name. The application chrome itself is written in Arabic and English.
 

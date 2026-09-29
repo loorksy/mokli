@@ -16,7 +16,7 @@ type VoiceSnap = {
   interrupted: boolean;
 };
 
-export function VoicePanel() {
+export function useVoiceSession() {
   const { t, i18n } = useTranslation();
   const [snap, setSnap] = useState<VoiceSnap | null>(null);
   const [local, setLocal] = useState(true);
@@ -98,35 +98,7 @@ export function VoicePanel() {
   }
 
   const state = snap?.state || "idle";
-  return (
-    <section className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--card)] p-4">
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <div>
-          <div className="text-xs text-[var(--muted)]">{t("voice")}</div>
-          <div className="text-lg">{t(`voiceState.${state}`)}</div>
-        </div>
-        <button
-          className="h-16 w-16 rounded-full bg-[var(--gold)] text-sm font-medium text-black"
-          onClick={() => { if (state === "speaking") void barge(); else void open(); }}
-          type="button"
-        >
-          {state === "speaking" ? t("barge") : t("talk")}
-        </button>
-      </div>
-      {!local && <p className="mb-2 text-sm text-[var(--muted)]">{t("voiceLocal")}</p>}
-      {snap?.transcript && <p className="text-sm text-[var(--muted)]">{snap.transcript}</p>}
-      {snap?.reply && <p className="mt-2 text-sm">{snap.reply}</p>}
-      {snap?.provider && (
-        <div className="mt-3 text-xs text-[var(--muted)]">
-          <div>{snap.agent}</div>
-          <div>{snap.provider}</div>
-          <div>{snap.model}</div>
-          <div>{snap.runtime}</div>
-          <div>● {snap.status || state}</div>
-        </div>
-      )}
-    </section>
-  );
+  return { snap, local, state, open, barge, t };
 }
 
 export function Activity() {
@@ -220,12 +192,12 @@ export function Journal() {
   }
   useEffect(() => { void load(); }, []);
   return (
-    <section className="grid gap-4 lg:grid-cols-2">
+    <section className="mx-auto grid w-full max-w-3xl gap-4 lg:grid-cols-2">
       <div className="space-y-2">
-        <h2 className="text-sm text-[var(--muted)]">{t("nav.journal")}</h2>
+        <h1 className="screen-title">{t("nav.journal")}</h1>
         {entries.length === 0 && <p className="text-[var(--muted)]">{t("empty")}</p>}
         {entries.map((entry, index) => (
-          <article key={entry.decision_id || index} className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--card)] p-3 text-sm">
+          <article key={entry.decision_id || index} className="card p-3 text-sm">
             {entry.verdict || t("empty")}
           </article>
         ))}
@@ -238,8 +210,8 @@ export function Journal() {
           setNote("");
           await load();
         }}>
-          <input className="flex-1 rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 py-2" value={note} onChange={(event) => setNote(event.target.value)} />
-          <button className="rounded-lg bg-[var(--gold)] px-3 py-2 text-black" type="submit">{t("send")}</button>
+          <input className="field" value={note} onChange={(event) => setNote(event.target.value)} />
+          <button className="quiet" type="submit">{t("send")}</button>
         </form>
         {memories.map((item) => (
           <article key={item.id} className="rounded-lg border border-[var(--line)] bg-[var(--card)] p-3 text-sm">{item.body}</article>
@@ -304,9 +276,10 @@ export function Signals() {
   const { t } = useTranslation();
   const [entries, setEntries] = useState<{ verdict?: string; blocking_rule?: string | null }[]>([]);
   useEffect(() => { void api<{ entries: { verdict?: string; blocking_rule?: string | null }[] }>("/api/journal").then((body) => setEntries(body.entries)); }, []);
-  if (entries.length === 0) return <p className="text-[var(--muted)]">{t("empty")}</p>;
   return (
-    <section className="space-y-2">
+    <section className="mx-auto w-full max-w-3xl space-y-2">
+      <h1 className="screen-title">{t("nav.signals")}</h1>
+      {entries.length === 0 && <p className="text-[var(--muted)]">{t("empty")}</p>}
       {entries.map((entry, index) => (
         <article key={index} className="flex items-center justify-between rounded-[var(--radius)] border border-[var(--line)] bg-[var(--card)] p-4">
           <span className={entry.verdict === "buy" ? "text-[var(--buy)]" : entry.verdict === "sell" ? "text-[var(--sell)]" : ""}>{entry.verdict}</span>
