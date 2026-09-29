@@ -1,0 +1,14 @@
+http:
+  routers:
+    mokli:
+      rule: Host(`mokli.lork.cloud`)
+      entryPoints:
+        - websecure
+      service: mokli
+      tls:
+        certResolver: letsencrypt
+  services:
+    mokli:
+      loadBalancer:
+        servers:
+          - url: http://127.0.0.1:8790

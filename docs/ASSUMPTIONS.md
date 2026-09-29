@@ -45,3 +45,5 @@ Recorded where the product brief left a choice open. Each item is the option the
 21. Daily and weekly reports are snapshots of the current paper book. They are not a reconstructed historical ledger.
 
 22. OANDA, MetaApi, and Telegram stay disconnected when their credentials are absent. Credentials without the settings live switch do not enable live orders. A confirmed proposal is sent to the live broker only when that switch is on and the broker is connected. If the broker transport is closed, the order is not sent and it is not filled on paper instead. The kill switch flattens the paper book immediately. On a live book it asks in the chat first. A described bot is stored under the agent and does not trade by itself.
+
+23. On the shared VPS the desk is a separate compose project named `mokli` in `/opt/mokli`, published only on `127.0.0.1:8790`. Port 8787 stays with the existing MCP process. Traefik serves `https://mokli.lork.cloud` from a new file, `mokli.yml`. The passphrase and any broker credentials stay in `/opt/mokli/.env` on that machine and are not committed. `MOKLI_LIVE` is `0`. The debug APK loads that public desk.

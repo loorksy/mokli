@@ -48,6 +48,8 @@ docker compose up --build
 
 Compose publishes `127.0.0.1:8787` and sets `MOKLI_LIVE=0` inside the container. The process listens on `0.0.0.0` only so the published port can reach it.
 
+On the shared VPS, Mokli does not use that port. `deploy/compose.vps.yml` publishes `127.0.0.1:8790` under compose project `mokli`, and `deploy/traefik-mokli.yml` is the only Traefik file it adds (`Host(\`mokli.lork.cloud\`)`). The desk passphrase stays in the server env file. The debug APK loads `https://mokli.lork.cloud`.
+
 If you later add broker credentials for a rehearsal:
 
 1. Keep `MOKLI_LIVE` unset.
