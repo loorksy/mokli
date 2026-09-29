@@ -14,7 +14,7 @@ Recorded where the product brief left a choice open. Each item is the option the
 
 6. Lot size rounds down to 0.01 so the loss at the stop never exceeds the budget. A one-cent step cannot hit the budget exactly on every distance.
 
-7. Live trading is paper unless `MOKLI_LIVE=1` and the settings flag `live_confirmed` are both true. The settings page cannot set that flag. A request that tries to confirm live is stored as off. Credentials never flip the mode.
+7. Paper is the default. Live orders require the settings switch and a connected broker (OANDA or MetaApi token plus account id). The process flag `MOKLI_LIVE` alone does not open the live book. A token alone does not. With the switch off, a confirmed proposal fills on the paper broker only. The live send function refuses before it calls a broker. Each order still needs its own chat confirmation. A failed risk check cancels the send. Silence, refusal, and a proposal older than 30 minutes do not send.
 
 8. The default active provider is the explicit Mokli runtime. If a selected vendor runtime fails, Mokli emits `provider_fallback_started`, `provider_fallback_completed`, or `provider_fallback_failed` and stores the original provider, model, runtime, the fallback, the reason, and the time. It does not switch silently.
 
@@ -44,4 +44,4 @@ Recorded where the product brief left a choice open. Each item is the option the
 
 21. Daily and weekly reports are snapshots of the current paper book. They are not a reconstructed historical ledger.
 
-22. OANDA, MetaApi, and Telegram stay disconnected when their credentials are absent. Credentials without `MOKLI_LIVE=1` and the settings confirmation do not enable live orders. This build refuses the live approval path even when both flags are set.
+22. OANDA, MetaApi, and Telegram stay disconnected when their credentials are absent. Credentials without the settings live switch do not enable live orders. A confirmed proposal is sent to the live broker only when that switch is on and the broker is connected. If the broker transport is closed, the order is not sent and it is not filled on paper instead. The kill switch flattens the paper book immediately. On a live book it asks in the chat first. A described bot is stored under the agent and does not trade by itself.

@@ -135,6 +135,12 @@ def risk_values(config: RiskConfig) -> dict[str, float | int]:
     return {key: getattr(config, key) for key in _RISK_KEYS}
 
 
+def broker_ready(settings: Settings) -> bool:
+    meta = bool(settings.metaapi_token.strip() and settings.metaapi_account_id.strip())
+    oanda = bool(settings.oanda_api_token.strip() and settings.oanda_account_id.strip())
+    return meta or oanda
+
+
 def connected(settings: Settings, provider_id: str) -> bool:
     secret = _SECRET_FIELDS.get(provider_id)
     if secret and str(getattr(settings, secret, "")).strip():
@@ -215,6 +221,7 @@ def public_recommendation(payload: dict[str, object], language: str) -> dict[str
         "entry": proposal.get("entry") if isinstance(proposal, dict) else None,
         "stop": proposal.get("stop") if isinstance(proposal, dict) else None,
         "targets": targets,
+        "size": proposal.get("lots") if isinstance(proposal, dict) else None,
         "rationale": _rationale(reason, direction, language),
         "confidence": f"{ok}/{total}" if total else None,
         "outcome": outcome,

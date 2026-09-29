@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "./api";
 import { InlineChart } from "./chart";
-import { RecommendationCard, type Recommendation } from "./desk";
+import { BotCard, RecommendationCard, type BotCardData, type Recommendation } from "./desk";
 import { applyDirection } from "./i18n";
 import { Notifications, useVoiceSession } from "./panels";
 import { displayName, setDisplayName } from "./profile";
@@ -95,12 +95,13 @@ type ChatReply = {
   text: string;
   chart?: { instrument: string };
   recommendation?: Recommendation;
+  bot?: BotCardData;
 };
 
 export function Chat({ openAttach, includeMarket, includeNews }: { openAttach: () => void; includeMarket: boolean; includeNews: boolean }) {
   const { t, i18n } = useTranslation();
   const [text, setText] = useState("");
-  const [lines, setLines] = useState<{ role: string; body: string; chart?: boolean; recommendation?: Recommendation }[]>([]);
+  const [lines, setLines] = useState<{ role: string; body: string; chart?: boolean; recommendation?: Recommendation; bot?: BotCardData }[]>([]);
   const [name, setName] = useState(displayName());
   const voice = useVoiceSession();
   useEffect(() => {
@@ -111,12 +112,12 @@ export function Chat({ openAttach, includeMarket, includeNews }: { openAttach: (
     const onNew = () => { setLines([]); setText(""); };
     const onProfile = () => setName(displayName());
     const onVoice = (event: Event) => {
-      const detail = (event as CustomEvent<{ transcript: string; reply: string; chart?: { instrument: string }; recommendation?: Recommendation }>).detail;
+      const detail = (event as CustomEvent<{ transcript: string; reply: string; chart?: { instrument: string }; recommendation?: Recommendation; bot?: BotCardData }>).detail;
       if (!detail?.transcript) return;
       setLines((current) => [
         ...current,
         { role: "user", body: detail.transcript },
-        { role: "mokli", body: detail.reply, chart: Boolean(detail.chart), recommendation: detail.recommendation },
+        { role: "mokli", body: detail.reply, chart: Boolean(detail.chart), recommendation: detail.recommendation, bot: detail.bot },
       ]);
     };
     window.addEventListener("mokli-draft", onDraft);
@@ -148,6 +149,7 @@ export function Chat({ openAttach, includeMarket, includeNews }: { openAttach: (
             {line.body}
             {line.chart && <InlineChart />}
             {line.recommendation && <RecommendationCard row={line.recommendation} />}
+            {line.bot && <BotCard bot={line.bot} />}
           </article>
         ))}
       </div>
@@ -170,6 +172,7 @@ export function Chat({ openAttach, includeMarket, includeNews }: { openAttach: (
           body: reply.text,
           chart: Boolean(reply.chart),
           recommendation: reply.recommendation,
+          bot: reply.bot,
         }]);
       }}>
         <button className="plus" type="button" aria-label={t("attachTitle")} onClick={openAttach}>+</button>

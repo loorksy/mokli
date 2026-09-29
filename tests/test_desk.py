@@ -6,11 +6,15 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlmodel import Session
 
 from mokli.config import Settings
+from mokli.db import create_db_engine
 from mokli.execution.live_gate import execution_book, live_orders_enabled
+from mokli.execution.live_order import submit_live_order
 from mokli.market.replay import ReplayClock
 from mokli.memory import recall, remember
+from mokli.schema import Approval
 from mokli.voice.local import WHISPER_MODEL, fixture_wav, silent_wav, synthesize, transcribe
 from mokli.voice.session import VoiceSession, VoiceTurn
 
@@ -111,10 +115,10 @@ def test_memory_recalls_by_overlap(tmp_path: Path) -> None:
 
 
 def test_credentials_do_not_enable_live_orders() -> None:
-    assert live_orders_enabled(mokli_live="0", confirmed=True) is False
-    assert live_orders_enabled(mokli_live="1", confirmed=False) is False
-    assert execution_book(mokli_live="0", confirmed=True) == "paper"
-    assert live_orders_enabled(mokli_live="1", confirmed=True) is True
+    assert live_orders_enabled(switch=False, broker_connected=True) is False
+    assert live_orders_enabled(switch=True, broker_connected=False) is False
+    assert execution_book(switch=False, broker_connected=True) == "paper"
+    assert live_orders_enabled(switch=True, broker_connected=True) is True
 
 
 def test_desk_replay_voice_and_debate(tmp_path: Path) -> None:
@@ -230,3 +234,123 @@ def test_settings_keep_secrets_and_live_locked(tmp_path: Path) -> None:
     assert row["connected"] is False
     stored = (tmp_path / "provider.env").read_text(encoding="utf-8")
     assert secret not in stored
+
+
+def _desk(tmp_path: Path) -> tuple[TestClient, dict[str, str], Settings]:
+    settings = Settings(mokli_data_dir=str(tmp_path), mokli_passphrase="secret-pass", mokli_live="0")
+    from mokli.gateway.app import create_app
+
+    client = TestClient(create_app(settings))
+    token = client.post("/api/auth/login", json={"passphrase": "secret-pass"}).json()["token"]
+    return client, {"Authorization": f"Bearer {token}"}, settings
+
+
+def test_unconfirmed_proposal_creates_no_order(tmp_path: Path) -> None:
+    client, headers, _settings = _desk(tmp_path)
+    loaded = client.post("/api/market/replay/synthetic", headers=headers, params={"seed": 7})
+    assert loaded.status_code == 200
+    reply = client.post("/api/chat", headers=headers, json={"message": "ما وضع الذهب"})
+    assert "هل أنفّذ؟" in reply.json()["text"]
+    book = client.get("/api/positions", headers=headers).json()
+    orders = client.get("/api/orders", headers=headers).json()
+    assert book["positions"] == []
+    assert orders["orders"] == []
+    refused = client.post("/api/chat", headers=headers, json={"message": "لا"})
+    assert refused.json()["execution"] == "rejected"
+    assert client.get("/api/positions", headers=headers).json()["positions"] == []
+    later = client.post("/api/chat", headers=headers, json={"message": "نعم"})
+    assert later.json()["text"]
+    assert "execution" not in later.json()
+    assert client.get("/api/orders", headers=headers).json()["orders"] == []
+
+
+def test_confirmed_proposal_that_fails_risk_creates_no_order(tmp_path: Path) -> None:
+    client, headers, settings = _desk(tmp_path)
+    assert client.post("/api/market/replay/synthetic", headers=headers, params={"seed": 7}).status_code == 200
+    with Session(create_db_engine(settings)) as session:
+        session.add(
+            Approval(
+                id="bad-risk",
+                status="pending",
+                payload=json.dumps(
+                    {
+                        "side": "buy",
+                        "entry": 2426.0,
+                        "stop": 2425.99,
+                        "target": 2426.01,
+                        "lots": 0.01,
+                        "reason_code": "TEST",
+                    }
+                ),
+            )
+        )
+        session.commit()
+    reply = client.post("/api/chat", headers=headers, json={"message": "نعم"})
+    assert reply.json()["execution"] == "rejected_at_gate"
+    assert client.get("/api/positions", headers=headers).json()["positions"] == []
+    assert client.get("/api/orders", headers=headers).json()["orders"] == []
+
+
+def test_confirmed_proposal_in_paper_mode_fills_on_paper_only(tmp_path: Path) -> None:
+    client, headers, _settings = _desk(tmp_path)
+    assert client.post("/api/market/replay/synthetic", headers=headers, params={"seed": 7}).status_code == 200
+    asked = client.post("/api/chat", headers=headers, json={"message": "ما وضع الذهب"})
+    assert "هل أنفّذ؟" in asked.json()["text"]
+    assert client.get("/api/positions", headers=headers).json()["positions"] == []
+    filled = client.post("/api/chat", headers=headers, json={"message": "نعم"})
+    body = filled.json()
+    assert body["execution"] == "executed"
+    assert body["book"] == "paper"
+    positions = client.get("/api/positions", headers=headers).json()["positions"]
+    assert len(positions) == 1
+    live = client.get("/api/live", headers=headers).json()
+    assert live["mode"] == "paper"
+    assert live["orders"] == "paper"
+
+
+def test_live_code_refuses_when_the_switch_is_off(tmp_path: Path) -> None:
+    calls: list[dict[str, object]] = []
+
+    def transport(proposal: dict[str, object]) -> str:
+        calls.append(proposal)
+        return "live-1"
+
+    result = submit_live_order(
+        switch=False,
+        broker_connected=True,
+        proposal={"side": "buy", "entry": 1},
+        transport=transport,
+    )
+    assert result.sent is False
+    assert result.reason == "switch_off"
+    assert calls == []
+    client, headers, _settings = _desk(tmp_path)
+    turned = client.put("/api/settings", headers=headers, json={"live_orders": True})
+    assert turned.json()["live_orders"] is False
+    assert turned.json()["mode"] == "paper"
+    assert turned.json()["orders"] == "paper"
+
+
+def test_bot_is_saved_and_does_not_trade(tmp_path: Path) -> None:
+    client, headers, settings = _desk(tmp_path)
+    message = "ابن بوت اتجاه على الذهب، فريم الساعة، دخول مع الكسر، خروج عند الهدف، وقف تحت القاع، مخاطرة 1%، جلسة لندن"
+    created = client.post("/api/chat", headers=headers, json={"message": message}).json()
+    bot = created["bot"]
+    assert bot["instrument"] == "XAUUSD"
+    assert bot["kind"] == "trend"
+    assert bot["timeframe"] == "H1"
+    assert bot["session"] == "London"
+    assert "كسر" in bot["entry"]
+    assert bot["size_rule"] == "1% of equity"
+    assert client.get("/api/positions", headers=headers).json()["positions"] == []
+    with Session(create_db_engine(settings)) as session:
+        session.add(Approval(id="bot-ask", status="pending", payload=json.dumps({"kind": "order", "bot_id": bot["id"], "side": "buy"})))
+        session.commit()
+    deleted = client.post("/api/chat", headers=headers, json={"message": "احذف البوت"}).json()
+    assert "حُذف" in deleted["text"]
+    assert client.get("/api/bots", headers=headers).json()["bots"] == []
+    with Session(create_db_engine(settings)) as session:
+        row = session.get(Approval, "bot-ask")
+        assert row is not None
+        assert row.status == "cancelled"
+    assert client.get("/api/orders", headers=headers).json()["orders"] == []

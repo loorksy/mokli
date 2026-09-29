@@ -219,6 +219,22 @@ class AuditLog(SQLModel, table=True):
     created_at: datetime = Field(default_factory=utcnow)
 
 
+class BotRow(SQLModel, table=True):
+    id: str = Field(primary_key=True)
+    name: str
+    kind: str
+    instrument: str = "XAUUSD"
+    timeframe: str = "M15"
+    entry: str
+    exit: str = ""
+    stop: str = ""
+    size_rule: str = ""
+    session: str = "all"
+    status: str = "active"
+    source: str = ""
+    created_at: datetime = Field(default_factory=utcnow)
+
+
 class SettingRow(SQLModel, table=True):
     key: str = Field(primary_key=True)
     value: str

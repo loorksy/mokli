@@ -10,6 +10,7 @@ export type Recommendation = {
   entry: number | null;
   stop: number | null;
   targets: number[];
+  size?: number | null;
   rationale: string;
   confidence: string | null;
   outcome: string;
@@ -17,12 +18,28 @@ export type Recommendation = {
 
 type Connection = { id: string; name: string; group: string; connected: boolean };
 
+export type BotCardData = {
+  id: string;
+  name: string;
+  kind: string;
+  instrument: string;
+  timeframe: string;
+  entry: string;
+  exit: string;
+  stop: string;
+  size_rule: string;
+  session: string;
+  status: string;
+};
+
 type SettingsBody = {
   language: string;
   active_provider: string;
   mode: string;
   orders: string;
   mokli_host: string;
+  live_orders: boolean;
+  broker_connected: boolean;
   live_locked: boolean;
   risk: {
     risk_fraction: number;
@@ -61,9 +78,31 @@ export function RecommendationCard({ row }: { row: Recommendation }) {
       <p><span className="text-[var(--muted)]">{t("rec.entry")}</span> <span className="latin">{row.entry ?? "—"}</span></p>
       <p><span className="text-[var(--muted)]">{t("rec.stop")}</span> <span className="latin">{row.stop ?? "—"}</span></p>
       <p><span className="text-[var(--muted)]">{t("rec.targets")}</span> <span className="latin">{row.targets.length ? row.targets.join(" · ") : "—"}</span></p>
+      {row.size != null && <p><span className="text-[var(--muted)]">{t("rec.size")}</span> <span className="latin">{row.size}</span></p>}
       <p>{row.rationale}</p>
       <p className="text-sm text-[var(--muted)]">{t("rec.confidence")} <span className="latin">{row.confidence ?? "—"}</span></p>
+      {row.direction === "buy" || row.direction === "sell" ? <p>{t("rec.ask")}</p> : null}
       <p className="text-sm text-[var(--muted)]">{t("rec.outcome")} {t(`rec.outcomes.${row.outcome}`, { defaultValue: row.outcome })}</p>
+    </article>
+  );
+}
+
+export function BotCard({ bot }: { bot: BotCardData }) {
+  const { t } = useTranslation();
+  return (
+    <article data-bot={bot.id} className="card mt-3 space-y-2 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <span>{bot.name}</span>
+        <span className="latin text-sm text-[var(--muted)]">{bot.instrument}</span>
+      </div>
+      <p><span className="text-[var(--muted)]">{t("bot.kind")}</span> <span className="latin">{bot.kind}</span></p>
+      <p><span className="text-[var(--muted)]">{t("bot.timeframe")}</span> <span className="latin">{bot.timeframe}</span></p>
+      <p><span className="text-[var(--muted)]">{t("bot.entry")}</span> {bot.entry}</p>
+      <p><span className="text-[var(--muted)]">{t("bot.exit")}</span> {bot.exit}</p>
+      <p><span className="text-[var(--muted)]">{t("bot.stop")}</span> {bot.stop}</p>
+      <p><span className="text-[var(--muted)]">{t("bot.size")}</span> <span className="latin">{bot.size_rule}</span></p>
+      <p><span className="text-[var(--muted)]">{t("bot.session")}</span> <span className="latin">{bot.session}</span></p>
+      <p className="text-sm text-[var(--muted)]">{bot.status === "paused" ? t("bot.paused") : t("bot.active")}</p>
     </article>
   );
 }
@@ -119,6 +158,8 @@ export function Settings() {
   const [host, setHost] = useState("");
   const [risk, setRisk] = useState({ risk_fraction: "", daily_loss_fraction: "", min_reward_risk: "", cooldown_minutes: "", max_open_positions: "" });
   const [secrets, setSecrets] = useState<Record<string, string>>({});
+  const [accounts, setAccounts] = useState<Record<string, string>>({});
+  const [bots, setBots] = useState<BotCardData[]>([]);
   const [note, setNote] = useState("");
   async function load() {
     const next = await api<SettingsBody>("/api/settings");
@@ -131,6 +172,8 @@ export function Settings() {
       cooldown_minutes: String(next.risk.cooldown_minutes),
       max_open_positions: String(next.risk.max_open_positions),
     });
+    const listed = await api<{ bots: BotCardData[] }>("/api/bots");
+    setBots(listed.bots);
   }
   useEffect(() => { void load(); }, []);
   if (!body) return <p className="text-[var(--muted)]">{t("empty")}</p>;
@@ -185,13 +228,13 @@ export function Settings() {
           {models.filter((item) => item.connected).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
         </select>
         {models.map((item) => (
-          <ProviderRow key={item.id} row={item} secret={secrets[item.id] || ""} onSecret={(value) => setSecrets({ ...secrets, [item.id]: value })} onDone={async (next) => { setBody(next); setSecrets({ ...secrets, [item.id]: "" }); }} />
+          <ProviderRow key={item.id} row={item} secret={secrets[item.id] || ""} account={accounts[item.id] || ""} onSecret={(value) => setSecrets({ ...secrets, [item.id]: value })} onAccount={(value) => setAccounts({ ...accounts, [item.id]: value })} onDone={async (next) => { setBody(next); setSecrets({ ...secrets, [item.id]: "" }); setAccounts({ ...accounts, [item.id]: "" }); }} />
         ))}
       </article>
       <article className="card space-y-3 p-4">
         <h2 className="text-sm text-[var(--muted)]">{t("settings.market")}</h2>
         {markets.map((item) => (
-          <ProviderRow key={item.id} row={item} secret={secrets[item.id] || ""} onSecret={(value) => setSecrets({ ...secrets, [item.id]: value })} onDone={async (next) => { setBody(next); setSecrets({ ...secrets, [item.id]: "" }); }} />
+          <ProviderRow key={item.id} row={item} secret={secrets[item.id] || ""} account={accounts[item.id] || ""} onSecret={(value) => setSecrets({ ...secrets, [item.id]: value })} onAccount={(value) => setAccounts({ ...accounts, [item.id]: value })} onDone={async (next) => { setBody(next); setSecrets({ ...secrets, [item.id]: "" }); setAccounts({ ...accounts, [item.id]: "" }); }} />
         ))}
       </article>
       <article className="card space-y-2 p-4">
@@ -209,17 +252,45 @@ export function Settings() {
           <option value="en">English</option>
         </select>
       </article>
-      <article className="card p-4" data-live-lock>
-        <p>{t("settings.liveLocked")}</p>
-        <p className="mt-2 text-sm text-[var(--muted)]"><span className="latin">{body.mode}</span> · <span className="latin">{body.orders}</span></p>
+      <article className="card space-y-3 p-4">
+        <h2 className="text-sm text-[var(--muted)]">{t("settings.bots")}</h2>
+        {bots.length === 0 ? <p className="text-sm text-[var(--muted)]">{t("empty")}</p> : bots.map((bot) => (
+          <div key={bot.id} className="space-y-2" data-saved-bot={bot.id}>
+            <BotCard bot={bot} />
+            <div className="flex gap-2">
+              <button className="quiet" type="button" onClick={async () => {
+                const path = bot.status === "paused" ? "resume" : "pause";
+                await api(`/api/bots/${bot.id}/${path}`, { method: "POST" });
+                await load();
+              }}>{bot.status === "paused" ? t("bot.resume") : t("bot.pause")}</button>
+              <button className="quiet" type="button" onClick={async () => {
+                await api(`/api/bots/${bot.id}`, { method: "DELETE" });
+                await load();
+              }}>{t("bot.delete")}</button>
+            </div>
+          </div>
+        ))}
+      </article>
+      <article className="card space-y-3 p-4" data-live-lock>
+        <p>{body.live_orders ? t("settings.liveOn") : t("settings.liveOff")}</p>
+        <button className="toggle" type="button" data-live-switch disabled={!body.broker_connected} onClick={async () => {
+          const next = await api<SettingsBody>("/api/settings", { method: "PUT", body: JSON.stringify({ live_orders: !body.live_orders }) });
+          setBody(next);
+        }}>
+          <span>{t("settings.liveSwitch")}</span>
+          <span className="switch" data-on={body.live_orders ? "true" : "false"}><i /></span>
+        </button>
+        {!body.broker_connected && <p className="text-sm text-[var(--muted)]">{t("settings.liveNeedsBroker")}</p>}
+        <p className="text-sm text-[var(--muted)]"><span className="latin">{body.mode}</span> · <span className="latin">{body.orders}</span></p>
       </article>
       {note && <p className="text-sm text-[var(--muted)]">{note}</p>}
     </section>
   );
 }
 
-function ProviderRow({ row, secret, onSecret, onDone }: { row: Connection; secret: string; onSecret: (value: string) => void; onDone: (body: SettingsBody) => void }) {
+function ProviderRow({ row, secret, account, onSecret, onAccount, onDone }: { row: Connection; secret: string; account: string; onSecret: (value: string) => void; onAccount: (value: string) => void; onDone: (body: SettingsBody) => void }) {
   const { t } = useTranslation();
+  const needsAccount = row.id === "oanda" || row.id === "metaapi";
   return (
     <div className="rounded-2xl border border-[var(--line)] p-3" data-provider={row.id}>
       <div className="flex items-center justify-between gap-3">
@@ -227,9 +298,10 @@ function ProviderRow({ row, secret, onSecret, onDone }: { row: Connection; secre
         <span className="text-sm text-[var(--muted)]">{row.connected ? t("settings.connected") : t("settings.disconnected")}</span>
       </div>
       <input className="field mt-2" type="password" autoComplete="new-password" value={secret} placeholder={row.id === "ollama" ? t("settings.modelName") : t("settings.secret")} onChange={(event) => onSecret(event.target.value)} />
+      {needsAccount && <input className="field latin mt-2" dir="ltr" autoComplete="off" value={account} placeholder={t("settings.account")} onChange={(event) => onAccount(event.target.value)} />}
       <div className="mt-2 flex gap-2">
         <button className="quiet" type="button" onClick={async () => {
-          const payload = row.id === "ollama" ? { id: row.id, account: secret } : { id: row.id, secret };
+          const payload = row.id === "ollama" ? { id: row.id, account: secret } : { id: row.id, secret, account };
           const next = await api<SettingsBody>("/api/settings/providers", { method: "POST", body: JSON.stringify(payload) });
           onDone(next);
         }}>{t("settings.connect")}</button>

@@ -28,7 +28,9 @@ Open `http://127.0.0.1:5173`. Arabic is the default. The chart stays left-to-rig
 ## Safety
 
 - `MOKLI_LIVE` defaults to unset, which the process reads as `0`. Leave it unset.
-- Settings cannot turn live orders on. The page states that they are off, and a confirmation request is stored as off.
+- Paper is the default. Live orders need a connected broker and the settings switch. The switch off refuses the live path.
+- Every order is asked in the chat first. A refusal, silence, or an expired proposal does not send. A failed risk check does not send.
+- A described bot is saved in the chat. It does not trade by itself.
 - A MetaApi token, an OANDA token, or a Telegram bot token does not place a live order.
 - Live orders need both `MOKLI_LIVE=1` and the confirmation flag. This build still refuses that path: approval returns 409 and the fill stays on `PaperBroker`. Do not set `MOKLI_LIVE` until a later release wires a live adapter on purpose.
 - Broker tools are rejected if an MCP server tries to expose them.

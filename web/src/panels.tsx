@@ -22,9 +22,23 @@ type VoiceSnap = {
     entry: number | null;
     stop: number | null;
     targets: number[];
+    size?: number | null;
     rationale: string;
     confidence: string | null;
     outcome: string;
+  };
+  bot?: {
+    id: string;
+    name: string;
+    kind: string;
+    instrument: string;
+    timeframe: string;
+    entry: string;
+    exit: string;
+    stop: string;
+    size_rule: string;
+    session: string;
+    status: string;
   };
 };
 
@@ -121,6 +135,7 @@ export function useVoiceSession() {
         reply: spoken.reply,
         chart: spoken.chart,
         recommendation: spoken.recommendation,
+        bot: spoken.bot,
       },
     }));
     try {

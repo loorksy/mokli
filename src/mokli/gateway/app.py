@@ -20,6 +20,7 @@ from sqlmodel import Session, col, select
 
 from mokli.agent.debate import run_debate
 from mokli.agent.mcp_bridge import analysis_server
+from mokli.bots import bot_command, parse_bot
 from mokli.charts import render_snapshot
 from mokli.config import Settings, load_settings
 from mokli.cycle import CycleResult, cycle_json, run_cycle
@@ -34,6 +35,7 @@ from mokli.db import (
 )
 from mokli.desk_view import (
     apply_provider,
+    broker_ready,
     connection_rows,
     load_env_store,
     performance_view,
@@ -42,7 +44,9 @@ from mokli.desk_view import (
     wants_chart,
     write_env_value,
 )
+from mokli.execution.confirm import proposal_expired, reply_kind
 from mokli.execution.live_gate import execution_book
+from mokli.execution.live_order import submit_live_flat, submit_live_order
 from mokli.execution.metaapi import status as metaapi_status
 from mokli.execution.paper import PaperBroker
 from mokli.execution.reconcile import reconcile
@@ -65,6 +69,7 @@ from mokli.schema import (
     Approval,
     AuditLog,
     AuthSession,
+    BotRow,
     BrokerSnapshot,
     CandleRow,
     Decision,
@@ -121,6 +126,7 @@ class MemoryBody(BaseModel):
 class SettingsBody(BaseModel):
     language: str | None = None
     live_confirmed: bool | None = None
+    live_orders: bool | None = None
     execution_mode: str | None = None
     active_provider: str | None = None
     mokli_host: str | None = None
@@ -129,6 +135,15 @@ class SettingsBody(BaseModel):
     min_reward_risk: float | None = None
     cooldown_minutes: int | None = None
     max_open_positions: int | None = None
+
+
+class BotEdit(BaseModel):
+    entry: str | None = None
+    exit: str | None = None
+    stop: str | None = None
+    size_rule: str | None = None
+    session: str | None = None
+    name: str | None = None
 
 
 class ProviderBody(BaseModel):
@@ -234,9 +249,11 @@ class Hub:
                 session.add(row)
             session.commit()
 
+    def live_switch(self) -> bool:
+        return self.setting("live_orders", "0") == "1"
+
     def live_mode(self) -> str:
-        confirmed = self.setting("live_confirmed", "0") == "1"
-        return execution_book(mokli_live=self.settings.mokli_live, confirmed=confirmed)
+        return execution_book(switch=self.live_switch(), broker_connected=broker_ready(self.settings))
 
     def audit(self, actor: str, action: str, detail: str) -> None:
         with Session(self.engine) as session:
@@ -405,6 +422,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         with Session(hub.engine) as session:
             session.add(Message(session_id=body.session_id, role="user", body=body.message))
             session.commit()
+        gated = await _gate_message(hub, body.message, body.session_id)
+        if gated is not None:
+            return gated
         snapshot = "UNAVAILABLE"
         if body.include_market and hub.candles:
             last = hub.candles[-1]
@@ -471,17 +491,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if hub.candles and hub.replay.index >= 0:
             candle = hub.candles[hub.replay.index]
             snapshot = f"close={candle.close} source={candle.source}"
-        outcome = await run_selected(
-            hub.settings,
-            hub.setting("active_provider", hub.settings.active_provider),
-            transcript,
-            snapshot,
-            session_id="voice",
-            engine=hub.engine,
-        )
-        payload = outcome_payload(outcome)
+        gated = await _gate_message(hub, transcript, "voice")
+        if gated is not None:
+            payload = gated
+        else:
+            outcome = await run_selected(
+                hub.settings,
+                hub.setting("active_provider", hub.settings.active_provider),
+                transcript,
+                snapshot,
+                session_id="voice",
+                engine=hub.engine,
+            )
+            payload = outcome_payload(outcome)
         recommendation = None
-        if wants_chart(transcript):
+        if gated is None and wants_chart(transcript):
             recommendation = await _recommendation_for_turn(hub)
             payload["text"] = _turn_prose(hub.setting("language", "ar"), recommendation)
         tools = payload["tools"] if isinstance(payload["tools"], list) else []
@@ -505,6 +529,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             snap["chart"] = {"instrument": hub.instrument}
             snap["recommendation"] = recommendation
             snap["reply"] = str(payload["text"])
+        if gated is not None:
+            snap["reply"] = str(payload["text"])
+            if "chart" in payload:
+                snap["chart"] = payload["chart"]
+            if "recommendation" in payload:
+                snap["recommendation"] = payload["recommendation"]
+            if "bot" in payload:
+                snap["bot"] = payload["bot"]
         return snap
 
     @app.post("/api/voice/utterance")
@@ -607,6 +639,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.post("/api/broker/kill")
     def kill(_user: User = Depends(current_user)) -> dict[str, object]:
+        if hub.live_mode() == "live":
+            ask = _queue_flatten(hub)
+            return {"killed": False, "ask": ask, "mode": "live"}
         hub.broker.kill()
         hub.audit("user", "kill_switch", "flattened paper book")
         hub.publish("agent_message_completed", {"level": "critical", "title": "Kill switch"})
@@ -745,7 +780,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         config = stored_risk(hub.setting)
         day_start = float(hub.setting("day_start_equity", str(hub.settings.paper_balance)))
         view = performance_view(hub.broker, config, day_start)
-        view["mode"] = "paper"
+        view["mode"] = hub.live_mode()
         return view
 
     @app.get("/api/settings")
@@ -757,8 +792,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "active_provider": hub.setting("active_provider", "mokli"),
             "live_flag": False,
             "live_confirmed": False,
-            "mode": "paper",
-            "orders": "paper",
+            "live_orders": hub.live_mode() == "live",
+            "broker_connected": broker_ready(hub.settings),
+            "mode": hub.live_mode(),
+            "orders": hub.live_mode(),
             "mokli_host": hub.settings.mokli_host,
             "risk": {
                 "risk_fraction": config.risk_fraction,
@@ -768,7 +805,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 "max_open_positions": config.max_open_positions,
             },
             "connections": connection_rows(hub.settings),
-            "live_locked": True,
+            "live_locked": hub.live_mode() != "live",
         }
 
     @app.put("/api/settings")
@@ -809,6 +846,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 raise HTTPException(status_code=400, detail=str(exc)) from exc
             for key in ("risk_fraction", "daily_loss_fraction", "min_reward_risk", "cooldown_minutes", "max_open_positions", "event_day_risk_fraction"):
                 hub.put_setting(key, str(getattr(updated, key)))
+        if body.live_orders is True and broker_ready(hub.settings):
+            hub.put_setting("live_orders", "1")
+        elif body.live_orders is False or not broker_ready(hub.settings):
+            hub.put_setting("live_orders", "0")
         hub.put_setting("live_confirmed", "0")
         return get_settings()
 
@@ -827,8 +868,42 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise HTTPException(status_code=404, detail="unknown provider") from exc
         if body.disconnect and hub.setting("active_provider", "mokli") == body.id:
             hub.put_setting("active_provider", "mokli")
+        if not broker_ready(hub.settings):
+            hub.put_setting("live_orders", "0")
         hub.audit("user", "provider.disconnect" if body.disconnect else "provider.connect", body.id)
         return get_settings()
+
+    @app.get("/api/bots")
+    def bots(_user: User = Depends(current_user)) -> dict[str, object]:
+        return {"bots": _bot_rows(hub)}
+
+    @app.post("/api/bots/{bot_id}/pause")
+    def pause_bot(bot_id: str, _user: User = Depends(current_user)) -> dict[str, object]:
+        return _set_bot_status(hub, bot_id, "paused")
+
+    @app.post("/api/bots/{bot_id}/resume")
+    def resume_bot(bot_id: str, _user: User = Depends(current_user)) -> dict[str, object]:
+        return _set_bot_status(hub, bot_id, "active")
+
+    @app.put("/api/bots/{bot_id}")
+    def edit_bot(bot_id: str, body: BotEdit, _user: User = Depends(current_user)) -> dict[str, object]:
+        with Session(hub.engine) as session:
+            row = session.get(BotRow, bot_id)
+            if row is None:
+                raise HTTPException(status_code=404, detail="bot not found")
+            for key in ("entry", "exit", "stop", "size_rule", "session", "name"):
+                value = getattr(body, key)
+                if value:
+                    setattr(row, key, value.strip())
+            session.add(row)
+            session.commit()
+            saved = _public_bot(row)
+        return {"bot": saved}
+
+    @app.delete("/api/bots/{bot_id}")
+    def delete_bot(bot_id: str, _user: User = Depends(current_user)) -> dict[str, object]:
+        cancelled = _delete_bot(hub, bot_id)
+        return {"deleted": bot_id, "cancelled": cancelled}
 
     @app.get("/api/notifications")
     def notifications(_user: User = Depends(current_user)) -> dict[str, object]:
@@ -894,7 +969,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "mode": hub.live_mode(),
             "mokli_live": hub.settings.mokli_live,
             "confirmed": hub.setting("live_confirmed", "0") == "1",
-            "orders": "paper",
+            "orders": hub.live_mode(),
             "metaapi": adapter.state,
             "detail": adapter.detail,
         }
@@ -1166,20 +1241,32 @@ def _resolve(hub: Hub, approval_id: str, accept: bool) -> dict[str, object]:
         if row is None or row.status != "pending":
             raise HTTPException(status_code=404, detail="approval not found")
         proposal_data = json.loads(row.payload)
+        if not isinstance(proposal_data, dict):
+            proposal_data = {}
+        if proposal_expired(row.created_at, utcnow()):
+            row.status = "expired"
+            row.resolved_at = utcnow()
+            session.add(row)
+            session.commit()
+            return {"status": "expired", "book": hub.live_mode()}
         if not accept:
             row.status = "rejected"
             row.resolved_at = utcnow()
             session.add(row)
             session.commit()
             hub.audit("user", "approval.reject", approval_id)
-            return {"status": "rejected"}
-        if hub.live_mode() == "live":
-            row.status = "blocked"
+            return {"status": "rejected", "book": hub.live_mode()}
+        if proposal_data.get("kind") == "flatten":
+            return _resolve_flatten(hub, session, row)
+        raw_side = proposal_data.get("side")
+        if raw_side not in {"buy", "sell"}:
+            row.status = "rejected"
+            row.resolved_at = utcnow()
             session.add(row)
             session.commit()
-            raise HTTPException(status_code=409, detail="live adapter is not the active paper path")
+            return {"status": "rejected", "book": hub.live_mode()}
         proposal = Proposal(
-            side=proposal_data["side"],
+            side="buy" if raw_side == "buy" else "sell",
             entry=float(proposal_data["entry"]),
             stop=float(proposal_data["stop"]),
             target=float(proposal_data["target"]),
@@ -1199,7 +1286,18 @@ def _resolve(hub: Hub, approval_id: str, accept: bool) -> dict[str, object]:
             row.resolved_at = utcnow()
             session.add(row)
             session.commit()
-            return {"status": row.status, "rule": gate.blocking_rule_id}
+            return {"status": row.status, "rule": gate.blocking_rule_id, "book": hub.live_mode()}
+        if hub.live_mode() == "live":
+            result = submit_live_order(
+                switch=hub.live_switch(),
+                broker_connected=broker_ready(hub.settings),
+                proposal=proposal_data,
+            )
+            row.status = "executed" if result.sent else "refused"
+            row.resolved_at = utcnow()
+            session.add(row)
+            session.commit()
+            return {"status": row.status, "reason": result.reason, "book": "live", "order_id": result.order_id}
         lots = float(proposal_data.get("lots") or 0.01)
         position = hub.broker.market(
             proposal.side,
@@ -1212,11 +1310,292 @@ def _resolve(hub: Hub, approval_id: str, accept: bool) -> dict[str, object]:
         row.status = "executed"
         row.resolved_at = utcnow()
         session.add(row)
-        session.add(PositionRow(id=position.id, payload=json.dumps({"id": position.id, "side": position.side, "remaining": position.remaining, "status": "open"}), status="open"))
-        session.add(LessonRow(rule_id=proposal.reason_code, summary="Proposal passed a fresh execution check and was filled on the paper broker.", outcome="skipped", tags=proposal.side))
+        filled = {"id": position.id, "side": position.side, "remaining": position.remaining, "status": "open"}
+        session.add(PositionRow(id=position.id, payload=json.dumps(filled), status="open"))
+        session.add(LessonRow(rule_id=proposal.reason_code, summary="Filled on the paper broker after chat confirmation.", outcome="skipped", tags=proposal.side))
         session.commit()
     hub.audit("user", "approval.execute", approval_id)
-    return {"status": "executed", "snapshot": hub.broker.snapshot()}
+    return {"status": "executed", "book": "paper", "snapshot": hub.broker.snapshot()}
+
+
+def _desk_reply(text: str, **extra: object) -> dict[str, object]:
+    payload: dict[str, object] = {
+        "text": text,
+        "provider": "Mokli",
+        "provider_id": "mokli",
+        "model": "deterministic-xauusd",
+        "runtime": "Mokli Runtime",
+        "agent": "Mokli",
+        "agent_id": "mokli",
+        "status": "completed",
+        "tools": [],
+        "sdk": "mokli",
+        "session_id": "main",
+        "events": [],
+    }
+    payload.update(extra)
+    return payload
+
+
+def _remember_reply(hub: Hub, session_id: str, text: str) -> None:
+    with Session(hub.engine) as session:
+        session.add(Message(session_id=session_id, role="mokli", body=text))
+        session.commit()
+
+
+def _latest_pending(hub: Hub) -> Approval | None:
+    with Session(hub.engine) as session:
+        rows = list(session.exec(select(Approval).where(Approval.status == "pending")).all())
+    if not rows:
+        return None
+    return max(rows, key=lambda row: row.created_at)
+
+
+def _confirm_latest(hub: Hub, session_id: str, accept: bool) -> dict[str, object]:
+    pending = _latest_pending(hub)
+    arabic = hub.setting("language", "ar") == "ar"
+    if pending is None:
+        text = "لا يوجد اقتراح معلّق." if arabic else "There is no open proposal."
+        payload = _desk_reply(text)
+        _remember_reply(hub, session_id, text)
+        return payload
+    result = _resolve(hub, pending.id, accept)
+    status = str(result.get("status"))
+    book = str(result.get("book") or hub.live_mode())
+    text = _confirm_text(arabic, status, book)
+    payload = _desk_reply(text, execution=status, book=book)
+    _remember_reply(hub, session_id, text)
+    return payload
+
+
+def _confirm_text(arabic: bool, status: str, book: str) -> str:
+    if status == "rejected":
+        return "لن أنفّذ." if arabic else "I will not execute."
+    if status == "expired":
+        return "انتهت صلاحية الاقتراح. لن أنفّذ." if arabic else "The proposal expired. I will not execute."
+    if status == "rejected_at_gate":
+        return "الحراسة رفضت الأمر. لن أنفّذ." if arabic else "The risk check refused the order. I will not execute."
+    if status == "refused":
+        return "لم يُرسل أمر حقيقي." if arabic else "No live order was sent."
+    if status == "executed" and book == "paper":
+        return "تم التنفيذ على الدفتر التجريبي." if arabic else "Filled on the paper book."
+    if status == "executed" and book == "live":
+        return "أُرسل الأمر إلى الوسيط." if arabic else "The order was sent to the broker."
+    return "لن أنفّذ." if arabic else "I will not execute."
+
+
+def _queue_flatten(hub: Hub) -> str:
+    arabic = hub.setting("language", "ar") == "ar"
+    ask = "هل أغلق الدفتر الحقيقي؟" if arabic else "Flatten the live book?"
+    pending = _latest_pending(hub)
+    if pending is not None:
+        payload = json.loads(pending.payload)
+        if isinstance(payload, dict) and payload.get("kind") == "flatten":
+            return ask
+    with Session(hub.engine) as session:
+        session.add(Approval(id=uuid.uuid4().hex[:12], status="pending", payload=json.dumps({"kind": "flatten"})))
+        session.commit()
+    return ask
+
+
+def _resolve_flatten(hub: Hub, session: Session, row: Approval) -> dict[str, object]:
+    book = hub.live_mode()
+    if book == "live":
+        result = submit_live_flat(switch=hub.live_switch(), broker_connected=broker_ready(hub.settings))
+        if not result.sent:
+            row.status = "refused"
+            row.resolved_at = utcnow()
+            session.add(row)
+            session.commit()
+            return {"status": "refused", "reason": result.reason, "book": "live"}
+    hub.broker.kill()
+    row.status = "executed"
+    row.resolved_at = utcnow()
+    session.add(row)
+    session.commit()
+    hub.audit("user", "kill_switch", f"flattened {book} book")
+    return {"status": "executed", "book": book}
+
+
+def _public_bot(row: BotRow) -> dict[str, object]:
+    return {
+        "id": row.id,
+        "name": row.name,
+        "kind": row.kind,
+        "instrument": row.instrument,
+        "timeframe": row.timeframe,
+        "entry": row.entry,
+        "exit": row.exit,
+        "stop": row.stop,
+        "size_rule": row.size_rule,
+        "session": row.session,
+        "status": row.status,
+    }
+
+
+def _bot_rows(hub: Hub) -> list[dict[str, object]]:
+    with Session(hub.engine) as session:
+        rows = list(session.exec(select(BotRow)).all())
+        rows.sort(key=lambda item: item.created_at, reverse=True)
+        return [_public_bot(row) for row in rows]
+
+
+def _latest_bot(hub: Hub) -> dict[str, object] | None:
+    with Session(hub.engine) as session:
+        rows = list(session.exec(select(BotRow)).all())
+        if not rows:
+            return None
+        row = max(rows, key=lambda item: item.created_at)
+        return _public_bot(row)
+
+
+def _status_bot(hub: Hub, bot_id: str, status: str) -> dict[str, object]:
+    saved = _set_bot_status(hub, bot_id, status)["bot"]
+    if not isinstance(saved, dict):
+        raise HTTPException(status_code=404, detail="bot not found")
+    return saved
+
+
+def _set_bot_status(hub: Hub, bot_id: str, status: str) -> dict[str, object]:
+    with Session(hub.engine) as session:
+        row = session.get(BotRow, bot_id)
+        if row is None:
+            raise HTTPException(status_code=404, detail="bot not found")
+        row.status = status
+        session.add(row)
+        session.commit()
+        saved = _public_bot(row)
+    return {"bot": saved}
+
+
+def _delete_bot(hub: Hub, bot_id: str) -> int:
+    cancelled = 0
+    with Session(hub.engine) as session:
+        row = session.get(BotRow, bot_id)
+        if row is None:
+            raise HTTPException(status_code=404, detail="bot not found")
+        session.delete(row)
+        approvals = list(session.exec(select(Approval).where(Approval.status == "pending")).all())
+        for item in approvals:
+            payload = json.loads(item.payload)
+            if isinstance(payload, dict) and payload.get("bot_id") == bot_id:
+                item.status = "cancelled"
+                item.resolved_at = utcnow()
+                session.add(item)
+                cancelled += 1
+        session.commit()
+    return cancelled
+
+
+def _save_bot(hub: Hub, spec: dict[str, str], source: str) -> dict[str, object]:
+    row = BotRow(
+        id=spec["id"],
+        name=spec["name"],
+        kind=spec["kind"],
+        instrument=spec["instrument"],
+        timeframe=spec["timeframe"],
+        entry=spec["entry"],
+        exit=spec["exit"],
+        stop=spec["stop"],
+        size_rule=spec["size_rule"],
+        session=spec["session"],
+        status=spec["status"],
+        source=source,
+    )
+    with Session(hub.engine) as session:
+        session.add(row)
+        session.commit()
+        saved = _public_bot(row)
+    return saved
+
+
+async def _gate_message(hub: Hub, message: str, session_id: str) -> dict[str, object] | None:
+    kind = reply_kind(message)
+    if kind == "yes":
+        return _confirm_latest(hub, session_id, True)
+    if kind == "no":
+        return _confirm_latest(hub, session_id, False)
+    command = bot_command(message)
+    if command is None:
+        return None
+    arabic = hub.setting("language", "ar") == "ar"
+    if command == "create":
+        saved = _save_bot(hub, parse_bot(message), message)
+        text = "حفظت البوت. لا يتداول وحده. كل إشارة ترجع كاقتراح، ثم أسأل: هل أنفّذ؟" if arabic else "The bot is saved. It does not trade by itself. Each signal comes back as a proposal, then I ask before an order."
+        payload = _desk_reply(text, bot=saved)
+        _remember_reply(hub, session_id, text)
+        return payload
+    latest = _latest_bot(hub)
+    if latest is None:
+        text = "لا يوجد بوت." if arabic else "There is no bot."
+        payload = _desk_reply(text)
+        _remember_reply(hub, session_id, text)
+        return payload
+    bot_id = str(latest["id"])
+    if command == "pause":
+        saved = _status_bot(hub, bot_id, "paused")
+        text = "البوت متوقف." if arabic else "The bot is paused."
+    elif command == "resume":
+        saved = _status_bot(hub, bot_id, "active")
+        text = "البوت يعمل. ما زال يسأل قبل أي أمر." if arabic else "The bot is active. It still asks before any order."
+    elif command == "delete":
+        _delete_bot(hub, bot_id)
+        text = "حُذف البوت وأُلغيت اقتراحاته المعلّقة." if arabic else "The bot was deleted and its pending proposals were cancelled."
+        payload = _desk_reply(text)
+        _remember_reply(hub, session_id, text)
+        return payload
+    elif command == "edit":
+        spec = parse_bot(message)
+        with Session(hub.engine) as session:
+            row = session.get(BotRow, bot_id)
+            if row is None:
+                raise HTTPException(status_code=404, detail="bot not found")
+            row.entry = spec["entry"]
+            row.exit = spec["exit"]
+            row.stop = spec["stop"]
+            row.size_rule = spec["size_rule"]
+            row.session = spec["session"]
+            row.timeframe = spec["timeframe"]
+            session.add(row)
+            session.commit()
+            saved = _public_bot(row)
+        text = "عُدّل البوت. لا يتداول وحده." if arabic else "The bot was edited. It does not trade by itself."
+    else:
+        return await _bot_signal(hub, latest, session_id)
+    payload = _desk_reply(text, bot=saved)
+    _remember_reply(hub, session_id, text)
+    return payload
+
+
+async def _bot_signal(hub: Hub, bot: dict[str, object], session_id: str) -> dict[str, object]:
+    arabic = hub.setting("language", "ar") == "ar"
+    if bot.get("status") != "active":
+        text = "البوت متوقف. لا إشارة." if arabic else "The bot is paused. There is no signal."
+        payload = _desk_reply(text, bot=bot)
+        _remember_reply(hub, session_id, text)
+        return payload
+    if not hub.candles or hub.broker.bid <= 0:
+        text = "لا توجد صفقة تستوفي الحراسة." if arabic else "No plan cleared the guardrails."
+        payload = _desk_reply(text)
+        _remember_reply(hub, session_id, text)
+        return payload
+    cycle = await _run_and_store_async(hub)
+    approval_id = cycle.get("approval_id")
+    if isinstance(approval_id, str) and approval_id:
+        with Session(hub.engine) as session:
+            row = session.get(Approval, approval_id)
+            if row is not None:
+                stored = json.loads(row.payload)
+                if isinstance(stored, dict):
+                    stored["bot_id"] = str(bot.get("id") or "")
+                    row.payload = json.dumps(stored)
+                    session.add(row)
+                    session.commit()
+    card = public_recommendation(cycle, "ar" if arabic else "en")
+    text = _turn_prose("ar" if arabic else "en", card)
+    payload = _desk_reply(text, recommendation=card, chart={"instrument": hub.instrument}, bot=bot)
+    _remember_reply(hub, session_id, text)
+    return payload
 
 
 async def _recommendation_for_turn(hub: Hub) -> dict[str, object]:
@@ -1255,17 +1634,15 @@ def _notify(hub: Hub, level: str, title: str, body: str, actions: list[dict[str,
 
 def _turn_prose(language: str, card: dict[str, object]) -> str:
     direction = str(card.get("direction") or "wait")
-    if language == "ar":
-        if direction == "buy":
-            return "شراء على الذهب. الدخول والوقف والهدف في البطاقة."
-        if direction == "sell":
-            return "بيع على الذهب. الدخول والوقف والهدف في البطاقة."
-        return "لا توجد صفقة تستوفي الحراسة."
+    arabic = language == "ar"
     if direction == "buy":
-        return "Buy on gold. Entry, stop, and target are on the card."
-    if direction == "sell":
-        return "Sell on gold. Entry, stop, and target are on the card."
-    return "No plan cleared the guardrails."
+        base = "شراء على الذهب. الدخول والوقف والهدف في البطاقة." if arabic else "Buy on gold. Entry, stop, and target are on the card."
+    elif direction == "sell":
+        base = "بيع على الذهب. الدخول والوقف والهدف في البطاقة." if arabic else "Sell on gold. Entry, stop, and target are on the card."
+    else:
+        return "لا توجد صفقة تستوفي الحراسة." if arabic else "No plan cleared the guardrails."
+    ask = "هل أنفّذ؟" if arabic else "Shall I execute?"
+    return f"{base}\n{ask}"
 
 
 def _chat_text(language: str, result: dict[str, object]) -> str:
