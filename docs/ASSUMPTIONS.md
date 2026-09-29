@@ -2,7 +2,7 @@
 
 Recorded where the product brief left a choice open. Each item is the option the code follows.
 
-1. The attached reference is a dark Arabic chat app. Mokli copies its craft: near-black ground, large calm type, thin rounded cards, pills, a bottom composer, a side list, and sheet menus. It does not copy that app's name, ghost mark, upgrade marketing, or sample tools. The empty chat uses an original camel silhouette, not their logo. The display name defaults to Ahmed and stays editable. Latin names stay left-to-right inside Arabic. Gold remains the trading accent, used sparingly.
+1. The attached reference is a dark Arabic chat app. Mokli copies its craft: near-black ground, large calm type, thin rounded cards, pills, a bottom composer, and sheet menus. It does not copy that app's name, ghost mark, upgrade marketing, or sample tools. The empty chat uses a small camel mark, not their logo and not a section. The display name defaults to Ahmed and stays editable. Latin names stay left-to-right inside Arabic. Gold remains the trading accent, used sparingly. The visible product is three destinations: the agent chat (home), recommendations, and performance. Debate, journal, memory, replay controls, tool catalogs, provider health, and broker internals stay in the backend. A chart and a recommendation card render inside the chat when the turn is about gold. The chart stays left-to-right. Settings is opened from the account menu. It edits the non-secret environment the gateway reads and connects providers. Secrets are stored locally and are not returned. Live orders stay locked from that page.
 
 2. `docs/SPEC_AR.md` in this repository is an English translation. Rule `title_ar` values prefix the English sentence with an Arabic category name. The application chrome itself is written in Arabic and English.
 
@@ -14,7 +14,7 @@ Recorded where the product brief left a choice open. Each item is the option the
 
 6. Lot size rounds down to 0.01 so the loss at the stop never exceeds the budget. A one-cent step cannot hit the budget exactly on every distance.
 
-7. Live trading is paper unless `MOKLI_LIVE=1` and the settings flag `live_confirmed` are both true. Credentials never flip the mode.
+7. Live trading is paper unless `MOKLI_LIVE=1` and the settings flag `live_confirmed` are both true. The settings page cannot set that flag. A request that tries to confirm live is stored as off. Credentials never flip the mode.
 
 8. The default active provider is the explicit Mokli runtime. If a selected vendor runtime fails, Mokli emits `provider_fallback_started`, `provider_fallback_completed`, or `provider_fallback_failed` and stores the original provider, model, runtime, the fallback, the reason, and the time. It does not switch silently.
 

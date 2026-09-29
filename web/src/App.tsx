@@ -1,29 +1,16 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { api, clearToken, setToken, token } from "./api";
+import { Performance, Recommendations, Settings } from "./desk";
 import { applyDirection } from "./i18n";
 import { flag, setFlag, displayName } from "./profile";
-import { Activity, Agents, Approvals, ChartPage, Chat, Dashboard, Debate, Journal, Lessons, News, Reports, Rules, Settings, Signals, Skills } from "./screens";
+import { Chat } from "./screens";
 
-const primary = [
-  ["/", "nav.dashboard"],
-  ["/debate", "nav.debate"],
-  ["/chart", "nav.charts"],
-  ["/signals", "nav.signals"],
-  ["/approvals", "nav.approvals"],
-  ["/journal", "nav.journal"],
-  ["/settings", "nav.settings"],
-] as const;
-
-const secondary = [
-  ["/activity", "nav.activity"],
-  ["/agents", "nav.tree"],
-  ["/skills", "nav.skills"],
-  ["/rules", "nav.rules"],
-  ["/news", "nav.news"],
-  ["/lessons", "nav.lessons"],
-  ["/reports", "nav.reports"],
+const nav = [
+  ["/", "nav.agent", "agent"],
+  ["/recommendations", "nav.recommendations", "recommendations"],
+  ["/performance", "nav.performance", "performance"],
 ] as const;
 
 export default function App() {
@@ -33,11 +20,10 @@ export default function App() {
   const location = useLocation();
   const [drawer, setDrawer] = useState(false);
   const [sheet, setSheet] = useState<"account" | "attach" | null>(null);
-  const [query, setQuery] = useState("");
   const [name, setName] = useState(displayName());
   const [includeMarket, setIncludeMarket] = useState(flag("mokli-market", true));
   const [includeNews, setIncludeNews] = useState(flag("mokli-news", true));
-  const chat = location.pathname === "/chat";
+  const chat = location.pathname === "/" || location.pathname === "/chat";
 
   useEffect(() => {
     applyDirection(i18n.language);
@@ -49,16 +35,8 @@ export default function App() {
     return () => window.removeEventListener("mokli-profile", refresh);
   }, []);
 
-  const links = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    const all = [...primary, ...secondary];
-    if (!needle) return { main: [...primary], more: [...secondary] };
-    const match = all.filter(([, key]) => t(key).toLowerCase().includes(needle) || key.toLowerCase().includes(needle));
-    return { main: match, more: [] as [string, string][] };
-  }, [query, t]);
-
   if (!authed) {
-    return <Login onSuccess={() => { setAuthed(true); navigate("/chat"); }} />;
+    return <Login onSuccess={() => { setAuthed(true); navigate("/"); }} />;
   }
 
   function go(path: string) {
@@ -74,27 +52,18 @@ export default function App() {
           <div className="text-2xl font-medium">{t("app")}</div>
           <span className="pill">{t("paper")}</span>
         </div>
-        <button className="side-link" type="button" onClick={() => { window.dispatchEvent(new Event("mokli-new-chat")); go("/chat"); }}>
+        <button className="side-link" type="button" onClick={() => { window.dispatchEvent(new Event("mokli-new-chat")); go("/"); }}>
           <span aria-hidden="true">+</span>
           <span>{t("newChat")}</span>
         </button>
-        <label className="mt-2 block">
-          <input className="field" placeholder={t("search")} value={query} onChange={(event) => setQuery(event.target.value)} />
-        </label>
-        <nav className="mt-3 flex-1 overflow-auto">
-          {links.main.map(([path, key]) => (
-            <NavLink key={path} to={path} end={path === "/"} className="side-link" data-active={location.pathname === path ? "true" : "false"} onClick={() => setDrawer(false)}>
+        <nav className="mt-3 flex-1 overflow-auto" data-nav-list>
+          {nav.map(([path, key, id]) => (
+            <NavLink key={path} to={path} end={path === "/"} className="side-link" data-nav={id} data-active={location.pathname === path ? "true" : "false"} onClick={() => setDrawer(false)}>
               <span>{t(key)}</span>
             </NavLink>
           ))}
-          {links.more.length > 0 && <div className="my-3 border-t border-[var(--line)]" />}
-          {links.more.map(([path, key]) => (
-            <NavLink key={path} to={path} className="side-link" data-active={location.pathname === path ? "true" : "false"} onClick={() => setDrawer(false)}>
-              <span className="text-[var(--muted)]">{t(key)}</span>
-            </NavLink>
-          ))}
         </nav>
-        <button className="side-link" type="button" onClick={() => go("/settings")}>
+        <button className="side-link" type="button" onClick={() => setSheet("account")}>
           <span className="flex items-center gap-3">
             <span className="avatar small">{name.slice(0, 1).toUpperCase()}</span>
             <span>
@@ -117,20 +86,10 @@ export default function App() {
         </header>
         <main className={chat ? "stage" : "stage stage-pad"}>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/chat" element={<Chat openAttach={() => setSheet("attach")} includeMarket={includeMarket} includeNews={includeNews} />} />
-            <Route path="/activity" element={<Activity />} />
-            <Route path="/agents" element={<Agents />} />
-            <Route path="/debate" element={<Debate />} />
-            <Route path="/chart" element={<ChartPage />} />
-            <Route path="/signals" element={<Signals />} />
-            <Route path="/approvals" element={<Approvals />} />
-            <Route path="/skills" element={<Skills />} />
-            <Route path="/rules" element={<Rules />} />
-            <Route path="/news" element={<News />} />
-            <Route path="/journal" element={<Journal />} />
-            <Route path="/lessons" element={<Lessons />} />
-            <Route path="/reports" element={<Reports />} />
+            <Route path="/" element={<Chat openAttach={() => setSheet("attach")} includeMarket={includeMarket} includeNews={includeNews} />} />
+            <Route path="/chat" element={<Navigate to="/" replace />} />
+            <Route path="/recommendations" element={<Recommendations />} />
+            <Route path="/performance" element={<Performance />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </main>
@@ -144,8 +103,7 @@ export default function App() {
             </div>
             <span className="avatar small">{name.slice(0, 1).toUpperCase()}</span>
           </div>
-          <button className="sheet-row" type="button" onClick={() => go("/settings")}><span>{t("nav.settings")}</span></button>
-          <button className="sheet-row" type="button" onClick={() => go("/journal")}><span>{t("memory")}</span></button>
+          <button className="sheet-row" type="button" data-open-settings onClick={() => go("/settings")}><span>{t("nav.settings")}</span></button>
           <label className="sheet-row">
             <span>{t("language")}</span>
             <select className="field" style={{ width: "auto" }} value={i18n.language} onChange={async (event) => {

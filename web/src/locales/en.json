@@ -18,7 +18,57 @@
     "journal": "Journal",
     "lessons": "Lessons",
     "reports": "Reports",
-    "settings": "Settings"
+    "settings": "Settings",
+    "agent": "Agent",
+    "recommendations": "Recommendations",
+    "performance": "Performance"
+  },
+  "rec": {
+    "entry": "Entry",
+    "stop": "Stop",
+    "targets": "Targets",
+    "confidence": "Confidence",
+    "outcome": "Outcome",
+    "wait": "Wait",
+    "outcomes": {
+      "pending": "Awaiting confirmation",
+      "pending_confirmation": "Awaiting confirmation",
+      "wait": "Wait",
+      "executed": "Filled on the paper book",
+      "rejected": "Rejected",
+      "rejected_at_gate": "Rejected at the gate",
+      "no_proposal": "No plan"
+    }
+  },
+  "perf": {
+    "equity": "Equity",
+    "win": "Win rate",
+    "expectancy": "Expectancy",
+    "daily": "Daily loss versus the limit"
+  },
+  "settings": {
+    "env": "Environment",
+    "paperLocked": "The mode is paper. Live orders are off.",
+    "bind": "Bind address",
+    "save": "Save",
+    "saveRisk": "Save limits",
+    "refused": "Those limits were refused.",
+    "saved": "Saved.",
+    "model": "Models",
+    "market": "Market and messages",
+    "active": "Active model",
+    "connected": "Connected",
+    "disconnected": "Not connected",
+    "secret": "Key",
+    "modelName": "Model name",
+    "connect": "Connect",
+    "disconnect": "Disconnect",
+    "liveLocked": "Live orders are off. They cannot be turned on here.",
+    "risk_fraction": "Risk per idea",
+    "daily_loss_fraction": "Daily loss limit",
+    "min_reward_risk": "Minimum reward to risk",
+    "cooldown_minutes": "Cooldown minutes",
+    "max_open_positions": "Open positions"
   },
   "kill": "Kill switch",
   "paper": "Paper",

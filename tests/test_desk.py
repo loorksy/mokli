@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import json
 from pathlib import Path
 
 import pytest
@@ -160,3 +161,72 @@ def test_desk_replay_voice_and_debate(tmp_path: Path) -> None:
     notes = client.get("/api/notifications", headers=headers).json()
     assert notes["channel"] == "in_app"
     assert any(item["title"] in {"Kill switch", "إيقاف طارئ"} for item in notes["notifications"])
+
+
+def test_gold_chat_embeds_a_chart_and_a_public_card(tmp_path: Path) -> None:
+    settings = Settings(mokli_data_dir=str(tmp_path), mokli_passphrase="secret-pass", mokli_live="0")
+    from mokli.gateway.app import create_app
+
+    client = TestClient(create_app(settings))
+    token = client.post("/api/auth/login", json={"passphrase": "secret-pass"}).json()["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    loaded = client.post("/api/market/replay/synthetic", headers=headers, params={"seed": 7})
+    assert loaded.status_code == 200
+    reply = client.post("/api/chat", headers=headers, json={"message": "ما وضع الذهب"})
+    body = reply.json()
+    assert body["chart"]["instrument"] == "XAUUSD"
+    assert "Price context" not in body["text"]
+    assert "البطاقة" in body["text"]
+    card = body["recommendation"]
+    assert card["direction"] == "buy"
+    assert card["entry"] is not None
+    assert card["stop"] is not None
+    assert card["targets"]
+    assert card["rationale"]
+    assert card["confidence"]
+    dumped = json.dumps(card).casefold()
+    for hidden in ("bull", "bear", "greed", "emotion", "professional", "notes"):
+        assert hidden not in dumped
+    listed = client.get("/api/recommendations", headers=headers).json()["recommendations"]
+    assert listed[0]["direction"] == "buy"
+    assert "notes" not in listed[0]
+    plain = client.post("/api/chat", headers=headers, json={"message": "price?"})
+    assert "chart" not in plain.json()
+    book = client.get("/api/performance", headers=headers).json()
+    assert book["mode"] == "paper"
+    for key in ("equity_r", "win_rate", "expectancy_r", "daily_loss", "daily_limit", "open_position"):
+        assert key in book
+
+
+def test_settings_keep_secrets_and_live_locked(tmp_path: Path) -> None:
+    secret = "sk-test-secret-value"
+    settings = Settings(mokli_data_dir=str(tmp_path), mokli_passphrase="secret-pass", mokli_live="0")
+    from mokli.gateway.app import create_app
+
+    client = TestClient(create_app(settings))
+    token = client.post("/api/auth/login", json={"passphrase": "secret-pass"}).json()["token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    connected = client.post("/api/settings/providers", headers=headers, json={"id": "openai", "secret": secret})
+    assert connected.status_code == 200
+    assert secret not in connected.text
+    openai = next(row for row in connected.json()["connections"] if row["id"] == "openai")
+    assert openai["connected"] is True
+    again = client.get("/api/settings", headers=headers)
+    assert secret not in again.text
+    page = again.json()
+    assert page["live_locked"] is True
+    assert page["mode"] == "paper"
+    assert page["orders"] == "paper"
+    assert page["live_confirmed"] is False
+    refused = client.put("/api/settings", headers=headers, json={"risk_fraction": 0.5})
+    assert refused.status_code == 400
+    locked = client.put("/api/settings", headers=headers, json={"live_confirmed": True})
+    assert locked.status_code == 200
+    assert locked.json()["live_confirmed"] is False
+    assert locked.json()["mode"] == "paper"
+    assert secret not in locked.text
+    off = client.post("/api/settings/providers", headers=headers, json={"id": "openai", "disconnect": True})
+    row = next(item for item in off.json()["connections"] if item["id"] == "openai")
+    assert row["connected"] is False
+    stored = (tmp_path / "provider.env").read_text(encoding="utf-8")
+    assert secret not in stored

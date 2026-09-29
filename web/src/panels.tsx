@@ -15,6 +15,17 @@ type VoiceSnap = {
   interrupted: boolean;
   audio_base64?: string;
   error?: string;
+  chart?: { instrument: string };
+  recommendation?: {
+    id: string;
+    direction: string;
+    entry: number | null;
+    stop: number | null;
+    targets: number[];
+    rationale: string;
+    confidence: string | null;
+    outcome: string;
+  };
 };
 
 type VoicePhase = "idle" | "listening" | "thinking" | "speaking";
@@ -105,7 +116,12 @@ export function useVoiceSession() {
     }
     setPhase("speaking");
     window.dispatchEvent(new CustomEvent("mokli-voice-line", {
-      detail: { transcript: spoken.transcript, reply: spoken.reply },
+      detail: {
+        transcript: spoken.transcript,
+        reply: spoken.reply,
+        chart: spoken.chart,
+        recommendation: spoken.recommendation,
+      },
     }));
     try {
       await playReply(spoken.audio_base64, gen);

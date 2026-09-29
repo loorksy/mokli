@@ -18,7 +18,57 @@
     "journal": "اليوميات",
     "lessons": "الدروس",
     "reports": "التقارير",
-    "settings": "الإعدادات"
+    "settings": "الإعدادات",
+    "agent": "الوكيل",
+    "recommendations": "التوصيات",
+    "performance": "الأداء"
+  },
+  "rec": {
+    "entry": "الدخول",
+    "stop": "الوقف",
+    "targets": "الأهداف",
+    "confidence": "الثقة",
+    "outcome": "النتيجة",
+    "wait": "انتظار",
+    "outcomes": {
+      "pending": "بانتظار التأكيد",
+      "pending_confirmation": "بانتظار التأكيد",
+      "wait": "انتظار",
+      "executed": "نُفذت على الدفتر التجريبي",
+      "rejected": "رُفضت",
+      "rejected_at_gate": "رُفضت عند البوابة",
+      "no_proposal": "لا خطة"
+    }
+  },
+  "perf": {
+    "equity": "حقوق الملكية",
+    "win": "نسبة الربح",
+    "expectancy": "التوقع",
+    "daily": "خسارة اليوم مقابل الحد"
+  },
+  "settings": {
+    "env": "البيئة",
+    "paperLocked": "الوضع تجريبي. الأوامر الحقيقية متوقفة.",
+    "bind": "عنوان الربط",
+    "save": "حفظ",
+    "saveRisk": "حفظ الحدود",
+    "refused": "رُفضت الحدود.",
+    "saved": "حُفظ.",
+    "model": "النماذج",
+    "market": "السوق والرسائل",
+    "active": "النموذج النشط",
+    "connected": "متصل",
+    "disconnected": "غير متصل",
+    "secret": "مفتاح",
+    "modelName": "اسم النموذج",
+    "connect": "ربط",
+    "disconnect": "فصل",
+    "liveLocked": "الأوامر الحقيقية متوقفة. لا يمكن تفعيلها من هنا.",
+    "risk_fraction": "مخاطرة الصفقة",
+    "daily_loss_fraction": "حد خسارة اليوم",
+    "min_reward_risk": "أدنى عائد إلى المخاطرة",
+    "cooldown_minutes": "التهدئة بالدقائق",
+    "max_open_positions": "أقصى المراكز المفتوحة"
   },
   "kill": "إيقاف طارئ",
   "paper": "تجريبي",

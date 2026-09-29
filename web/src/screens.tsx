@@ -2,6 +2,8 @@ import { CandlestickSeries, ColorType, createChart, type CandlestickData, type I
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "./api";
+import { InlineChart } from "./chart";
+import { RecommendationCard, type Recommendation } from "./desk";
 import { applyDirection } from "./i18n";
 import { Notifications, useVoiceSession } from "./panels";
 import { displayName, setDisplayName } from "./profile";
@@ -91,18 +93,14 @@ export function Dashboard() {
 
 type ChatReply = {
   text: string;
-  provider: string;
-  model: string;
-  runtime: string;
-  agent: string;
-  status: string;
-  tools: string[];
+  chart?: { instrument: string };
+  recommendation?: Recommendation;
 };
 
 export function Chat({ openAttach, includeMarket, includeNews }: { openAttach: () => void; includeMarket: boolean; includeNews: boolean }) {
   const { t, i18n } = useTranslation();
   const [text, setText] = useState("");
-  const [lines, setLines] = useState<{ role: string; body: string; meta?: ChatReply }[]>([]);
+  const [lines, setLines] = useState<{ role: string; body: string; chart?: boolean; recommendation?: Recommendation }[]>([]);
   const [name, setName] = useState(displayName());
   const voice = useVoiceSession();
   useEffect(() => {
@@ -113,12 +111,12 @@ export function Chat({ openAttach, includeMarket, includeNews }: { openAttach: (
     const onNew = () => { setLines([]); setText(""); };
     const onProfile = () => setName(displayName());
     const onVoice = (event: Event) => {
-      const detail = (event as CustomEvent<{ transcript: string; reply: string }>).detail;
+      const detail = (event as CustomEvent<{ transcript: string; reply: string; chart?: { instrument: string }; recommendation?: Recommendation }>).detail;
       if (!detail?.transcript) return;
       setLines((current) => [
         ...current,
         { role: "user", body: detail.transcript },
-        { role: "mokli", body: detail.reply },
+        { role: "mokli", body: detail.reply, chart: Boolean(detail.chart), recommendation: detail.recommendation },
       ]);
     };
     window.addEventListener("mokli-draft", onDraft);
@@ -147,18 +145,9 @@ export function Chat({ openAttach, includeMarket, includeNews }: { openAttach: (
           </div>
         ) : lines.map((line, index) => (
           <article key={index} className="py-3 text-[17px] leading-7">
-            {line.meta && (
-              <p className="mb-1 text-xs text-[var(--muted)]">
-                <span className="latin">{line.meta.agent}</span>
-                {" · "}
-                <span className="latin">{line.meta.provider}</span>
-                {" · "}
-                <span className="latin">{line.meta.model}</span>
-                {" · "}
-                <span className="latin">{line.meta.runtime}</span>
-              </p>
-            )}
             {line.body}
+            {line.chart && <InlineChart />}
+            {line.recommendation && <RecommendationCard row={line.recommendation} />}
           </article>
         ))}
       </div>
@@ -176,7 +165,12 @@ export function Chat({ openAttach, includeMarket, includeNews }: { openAttach: (
           method: "POST",
           body: JSON.stringify({ message, include_market: includeMarket, include_news: includeNews }),
         });
-        setLines((current) => [...current, { role: "mokli", body: reply.text, meta: reply }]);
+        setLines((current) => [...current, {
+          role: "mokli",
+          body: reply.text,
+          chart: Boolean(reply.chart),
+          recommendation: reply.recommendation,
+        }]);
       }}>
         <button className="plus" type="button" aria-label={t("attachTitle")} onClick={openAttach}>+</button>
         <input dir="auto" placeholder={t("composer")} value={text} onChange={(event) => setText(event.target.value)} />
@@ -270,8 +264,10 @@ export function ChartPage() {
         const label = candleStamp(row.time as Time);
         if (x == null || next.some((item) => item.label === label)) continue;
         const previous = next[next.length - 1];
+        const last = index === rows.length - 1;
         if (previous && x - previous.x < 96) {
-          next[next.length - 1] = { label, x };
+          if (last && next.length > 1) next[next.length - 1] = { label, x };
+          else if (last) next.push({ label, x });
           continue;
         }
         next.push({ label, x });

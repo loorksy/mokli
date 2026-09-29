@@ -2,6 +2,8 @@
 
 Personal, self-hosted agent for XAUUSD. One operator. Paper by default.
 
+The desk is one chat. Recommendations and performance are the other two views. Charts and recommendation cards appear inside the thread. Settings opens from the account menu.
+
 The model can propose. Lot size, spread, stale ticks, daily loss, and the approval gate are ordinary Python. They do not depend on the model agreeing.
 
 ## Run
@@ -26,7 +28,7 @@ Open `http://127.0.0.1:5173`. Arabic is the default. The chart stays left-to-rig
 ## Safety
 
 - `MOKLI_LIVE` defaults to unset, which the process reads as `0`. Leave it unset.
-- A settings checkbox stores confirmation. It does not enable live trading by itself.
+- Settings cannot turn live orders on. The page states that they are off, and a confirmation request is stored as off.
 - A MetaApi token, an OANDA token, or a Telegram bot token does not place a live order.
 - Live orders need both `MOKLI_LIVE=1` and the confirmation flag. This build still refuses that path: approval returns 409 and the fill stays on `PaperBroker`. Do not set `MOKLI_LIVE` until a later release wires a live adapter on purpose.
 - Broker tools are rejected if an MCP server tries to expose them.

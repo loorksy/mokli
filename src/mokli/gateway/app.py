@@ -22,7 +22,7 @@ from mokli.agent.debate import run_debate
 from mokli.agent.mcp_bridge import analysis_server
 from mokli.charts import render_snapshot
 from mokli.config import Settings, load_settings
-from mokli.cycle import cycle_json, run_cycle
+from mokli.cycle import CycleResult, cycle_json, run_cycle
 from mokli.db import (
     create_db_engine,
     ensure_user,
@@ -32,6 +32,16 @@ from mokli.db import (
     new_token,
     verify_passphrase,
 )
+from mokli.desk_view import (
+    apply_provider,
+    connection_rows,
+    load_env_store,
+    performance_view,
+    public_recommendation,
+    stored_risk,
+    wants_chart,
+    write_env_value,
+)
 from mokli.execution.live_gate import execution_book
 from mokli.execution.metaapi import status as metaapi_status
 from mokli.execution.paper import PaperBroker
@@ -40,7 +50,7 @@ from mokli.market.candles import Candle, load_csv, synthetic_candles
 from mokli.market.candles import atr as atr_value
 from mokli.market.replay import ReplayClock, market_status, quote_from_candle
 from mokli.memory import recall, remember
-from mokli.models import Account, Market, Proposal
+from mokli.models import Account, Market, Proposal, RiskConfig
 from mokli.news.classify import classify_news_candle
 from mokli.news.machine import news_state
 from mokli.risk.guardrails import execution_recheck
@@ -113,10 +123,25 @@ class SettingsBody(BaseModel):
     live_confirmed: bool | None = None
     execution_mode: str | None = None
     active_provider: str | None = None
+    mokli_host: str | None = None
+    risk_fraction: float | None = None
+    daily_loss_fraction: float | None = None
+    min_reward_risk: float | None = None
+    cooldown_minutes: int | None = None
+    max_open_positions: int | None = None
+
+
+class ProviderBody(BaseModel):
+    id: str
+    secret: str = ""
+    account: str = ""
+    host: str = ""
+    disconnect: bool = False
 
 
 class Hub:
     def __init__(self, settings: Settings) -> None:
+        load_env_store(settings)
         self.settings = settings
         self.engine = create_db_engine(settings)
         init_database(self.engine)
@@ -397,6 +422,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             engine=hub.engine,
         )
         payload = outcome_payload(outcome)
+        if wants_chart(body.message):
+            payload["chart"] = {"instrument": hub.instrument}
+            card = await _recommendation_for_turn(hub)
+            payload["recommendation"] = card
+            payload["text"] = _turn_prose(hub.setting("language", "ar"), card)
         with Session(hub.engine) as session:
             session.add(Message(session_id=body.session_id, role="mokli", body=str(payload["text"])))
             session.commit()
@@ -450,6 +480,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             engine=hub.engine,
         )
         payload = outcome_payload(outcome)
+        recommendation = None
+        if wants_chart(transcript):
+            recommendation = await _recommendation_for_turn(hub)
+            payload["text"] = _turn_prose(hub.setting("language", "ar"), recommendation)
         tools = payload["tools"] if isinstance(payload["tools"], list) else []
         hub.voice.deliver(
             transcript,
@@ -467,6 +501,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         audio = synthesize(str(payload["text"]), body.lang)
         snap = hub.voice.snapshot()
         snap["audio_base64"] = base64.b64encode(audio).decode("ascii")
+        if recommendation is not None:
+            snap["chart"] = {"instrument": hub.instrument}
+            snap["recommendation"] = recommendation
+            snap["reply"] = str(payload["text"])
         return snap
 
     @app.post("/api/voice/utterance")
@@ -683,18 +721,54 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "candle_rules": candle_rules,
         }
 
+    @app.get("/api/recommendations")
+    def recommendations(_user: User = Depends(current_user)) -> dict[str, object]:
+        language = hub.setting("language", "ar")
+        with Session(hub.engine) as session:
+            decisions = list(session.exec(select(Decision).order_by(col(Decision.created_at).desc())).all())[:40]
+            approvals = list(session.exec(select(Approval)).all())
+        by_decision = {row.decision_id: row.status for row in approvals}
+        rows = []
+        for decision in decisions:
+            payload = json.loads(decision.payload)
+            if not isinstance(payload, dict):
+                continue
+            payload["decision_id"] = decision.id
+            status = by_decision.get(decision.id)
+            if status:
+                payload["outcome"] = status
+            rows.append(public_recommendation(payload, language))
+        return {"recommendations": rows}
+
+    @app.get("/api/performance")
+    def performance(_user: User = Depends(current_user)) -> dict[str, object]:
+        config = stored_risk(hub.setting)
+        day_start = float(hub.setting("day_start_equity", str(hub.settings.paper_balance)))
+        view = performance_view(hub.broker, config, day_start)
+        view["mode"] = "paper"
+        return view
+
     @app.get("/api/settings")
     def get_settings(_user: User = Depends(current_user)) -> dict[str, object]:
+        config = stored_risk(hub.setting)
         return {
             "language": hub.setting("language", "ar"),
             "execution_mode": hub.setting("execution_mode", "approval"),
             "active_provider": hub.setting("active_provider", "mokli"),
-            "live_flag": hub.settings.live_flag,
-            "live_confirmed": hub.setting("live_confirmed", "0") == "1",
-            "mode": hub.live_mode(),
-            "timezone": hub.settings.display_timezone,
-            "providers": _provider_catalog(hub),
-            "capabilities": _active_capabilities(hub),
+            "live_flag": False,
+            "live_confirmed": False,
+            "mode": "paper",
+            "orders": "paper",
+            "mokli_host": hub.settings.mokli_host,
+            "risk": {
+                "risk_fraction": config.risk_fraction,
+                "daily_loss_fraction": config.daily_loss_fraction,
+                "min_reward_risk": config.min_reward_risk,
+                "cooldown_minutes": config.cooldown_minutes,
+                "max_open_positions": config.max_open_positions,
+            },
+            "connections": connection_rows(hub.settings),
+            "live_locked": True,
         }
 
     @app.put("/api/settings")
@@ -706,9 +780,54 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if body.active_provider:
             hub.put_setting("active_provider", body.active_provider)
             hub.audit("user", "provider.change", body.active_provider)
-        if body.live_confirmed is not None:
-            hub.put_setting("live_confirmed", "1" if body.live_confirmed else "0")
-            hub.audit("user", "live.confirm", hub.setting("live_confirmed", "0"))
+        if body.mokli_host and body.mokli_host.strip():
+            host = body.mokli_host.strip()
+            if len(host) > 80 or any(char.isspace() for char in host):
+                raise HTTPException(status_code=400, detail="bind address refused")
+            write_env_value(hub.settings, "mokli_host", host)
+        if any(
+            value is not None
+            for value in (
+                body.risk_fraction,
+                body.daily_loss_fraction,
+                body.min_reward_risk,
+                body.cooldown_minutes,
+                body.max_open_positions,
+            )
+        ):
+            current = stored_risk(hub.setting)
+            try:
+                updated = RiskConfig(
+                    risk_fraction=body.risk_fraction if body.risk_fraction is not None else current.risk_fraction,
+                    daily_loss_fraction=body.daily_loss_fraction if body.daily_loss_fraction is not None else current.daily_loss_fraction,
+                    min_reward_risk=body.min_reward_risk if body.min_reward_risk is not None else current.min_reward_risk,
+                    cooldown_minutes=body.cooldown_minutes if body.cooldown_minutes is not None else current.cooldown_minutes,
+                    max_open_positions=body.max_open_positions if body.max_open_positions is not None else current.max_open_positions,
+                    event_day_risk_fraction=min(current.event_day_risk_fraction, body.risk_fraction or current.risk_fraction),
+                )
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from exc
+            for key in ("risk_fraction", "daily_loss_fraction", "min_reward_risk", "cooldown_minutes", "max_open_positions", "event_day_risk_fraction"):
+                hub.put_setting(key, str(getattr(updated, key)))
+        hub.put_setting("live_confirmed", "0")
+        return get_settings()
+
+    @app.post("/api/settings/providers")
+    def connect_provider(body: ProviderBody, _user: User = Depends(current_user)) -> dict[str, object]:
+        try:
+            apply_provider(
+                hub.settings,
+                body.id,
+                secret=body.secret,
+                account=body.account,
+                host=body.host,
+                disconnect=body.disconnect,
+            )
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="unknown provider") from exc
+        if body.disconnect and hub.setting("active_provider", "mokli") == body.id:
+            hub.put_setting("active_provider", "mokli")
+        hub.audit("user", "provider.disconnect" if body.disconnect else "provider.connect", body.id)
         return get_settings()
 
     @app.get("/api/notifications")
@@ -945,15 +1064,38 @@ def _store_candles(hub: Hub) -> None:
         session.commit()
 
 
-def _run_and_store(hub: Hub) -> dict[str, object]:
+def _prepare_cycle(hub: Hub) -> tuple[CycleResult, str, str, str, str]:
     parent = uuid.uuid4().hex[:12]
     provider = hub.setting("active_provider", "mokli")
     runtime = _runtime_name(hub)
     model = _model_name(hub)
-    result = run_cycle(hub.candles, hub.broker, event_time=hub.event_time)
+    result = run_cycle(hub.candles, hub.broker, event_time=hub.event_time, config=stored_risk(hub.setting))
+    return result, parent, provider, runtime, model
+
+
+def _run_and_store(hub: Hub) -> dict[str, object]:
+    result, parent, provider, runtime, model = _prepare_cycle(hub)
     children = asyncio.run(
         run_debate(result, parent_id=parent, provider=provider, model=model, runtime=runtime)
     )
+    return _persist_cycle(hub, result, children, parent, provider, runtime, model)
+
+
+async def _run_and_store_async(hub: Hub) -> dict[str, object]:
+    result, parent, provider, runtime, model = _prepare_cycle(hub)
+    children = await run_debate(result, parent_id=parent, provider=provider, model=model, runtime=runtime)
+    return _persist_cycle(hub, result, children, parent, provider, runtime, model)
+
+
+def _persist_cycle(
+    hub: Hub,
+    result: CycleResult,
+    children: list[dict[str, object]],
+    parent: str,
+    provider: str,
+    runtime: str,
+    model: str,
+) -> dict[str, object]:
     with Session(hub.engine) as session:
         session.add(AgentRun(id=parent, role="mokli", provider=provider, runtime=runtime, model=model, status="completed", session_id="main"))
         for child in children:
@@ -1077,6 +1219,14 @@ def _resolve(hub: Hub, approval_id: str, accept: bool) -> dict[str, object]:
     return {"status": "executed", "snapshot": hub.broker.snapshot()}
 
 
+async def _recommendation_for_turn(hub: Hub) -> dict[str, object]:
+    language = hub.setting("language", "ar")
+    if not hub.candles or hub.broker.bid <= 0:
+        return public_recommendation({"verdict": "wait", "proposal": None, "risk_status": "no_proposal"}, language)
+    cycle = await _run_and_store_async(hub)
+    return public_recommendation(cycle, language)
+
+
 def _desk_copy(hub: Hub, key: str, **values: object) -> tuple[str, str]:
     arabic = hub.setting("language", "ar") == "ar"
     if key == "kill":
@@ -1101,6 +1251,21 @@ def _notify(hub: Hub, level: str, title: str, body: str, actions: list[dict[str,
         session.add(Notification(id=uuid.uuid4().hex[:12], level=level, title=title, body=body, actions=json.dumps(actions)))
         session.commit()
     hub.publish("approval_required" if level == "action" else "agent_message_completed", {"title": title, "body": body, "level": level})
+
+
+def _turn_prose(language: str, card: dict[str, object]) -> str:
+    direction = str(card.get("direction") or "wait")
+    if language == "ar":
+        if direction == "buy":
+            return "شراء على الذهب. الدخول والوقف والهدف في البطاقة."
+        if direction == "sell":
+            return "بيع على الذهب. الدخول والوقف والهدف في البطاقة."
+        return "لا توجد صفقة تستوفي الحراسة."
+    if direction == "buy":
+        return "Buy on gold. Entry, stop, and target are on the card."
+    if direction == "sell":
+        return "Sell on gold. Entry, stop, and target are on the card."
+    return "No plan cleared the guardrails."
 
 
 def _chat_text(language: str, result: dict[str, object]) -> str:
