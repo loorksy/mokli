@@ -44,7 +44,14 @@ install_android_sdk() {
   rm -rf "${dest}/cmdline-tools/latest"
   unzip -q -o "${zip}" -d "${dest}/cmdline-tools"
   mv "${dest}/cmdline-tools/cmdline-tools" "${dest}/cmdline-tools/latest"
+  # `yes` exits 141 when sdkmanager closes the pipe. pipefail would fail a successful install.
+  set +o pipefail
   yes | "${dest}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${dest}" "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+  local status=$?
+  set -o pipefail
+  if [[ "${status}" -ne 0 ]]; then
+    exit "${status}"
+  fi
   export ANDROID_HOME="${dest}"
   export ANDROID_SDK_ROOT="${dest}"
 }

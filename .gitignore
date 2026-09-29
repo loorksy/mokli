@@ -12,6 +12,7 @@ node_modules/
 web/dist/
 android/
 .mobile-android/
+.android-sdk/
 *.apk
 .mokli/
 htmlcov/
