@@ -431,7 +431,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             raise HTTPException(status_code=400, detail="bad audio") from exc
         hub.voice.start()
         try:
-            transcript = transcribe(raw)
+            transcript = transcribe(raw, body.lang)
         except ValueError:
             hub.voice.stop()
             snap = hub.voice.snapshot()

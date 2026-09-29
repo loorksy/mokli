@@ -1,8 +1,9 @@
 """Local spoken loop used when no vendor realtime key is configured.
 
 A recording with a ``mokl`` text chunk is transcribed from that chunk.
-Any other non-silent payload uses a fixed local phrase. Reply audio is
-written with espeak-ng when that binary exists, otherwise as a PCM wav.
+Every other audible recording is transcribed by faster-whisper ``small``
+(multilingual, int8, CPU). Reply audio is written with espeak-ng when
+that binary exists, otherwise as a PCM wav.
 """
 
 from __future__ import annotations
@@ -14,8 +15,9 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-LOCAL_PHRASE = "اقرأ الشريط"
+WHISPER_MODEL = "small"
 _RATE = 16000
+_MODEL: object | None = None
 
 
 def fixture_wav(transcript: str, *, seconds: float = 0.3) -> bytes:
@@ -28,21 +30,20 @@ def silent_wav(*, seconds: float = 0.2) -> bytes:
     return _wrap_wav(b"\x00\x00" * count, "")
 
 
-def transcribe(audio: bytes) -> str:
+def transcribe(audio: bytes, lang: str = "") -> str:
     packed = _read_mokl(audio)
     if packed:
         return packed
-    if audio.startswith(b"MOKLI_TEXT:"):
-        text = audio[len(b"MOKLI_TEXT:") :].split(b"\x00", 1)[0].decode("utf-8", errors="replace").strip()
-        if text:
-            return text
-    if _audible(audio):
-        return LOCAL_PHRASE
-    raise ValueError("silent recording")
+    if not _audible(audio):
+        raise ValueError("silent recording")
+    text = _whisper(audio, lang).strip()
+    if not text:
+        raise ValueError("silent recording")
+    return text
 
 
 def synthesize(text: str, lang: str = "ar") -> bytes:
-    spoken = text.strip() or LOCAL_PHRASE
+    spoken = text.strip() or "..."
     produced = _espeak(spoken, lang)
     if produced is not None:
         return produced
@@ -70,6 +71,55 @@ def _espeak(text: str, lang: str) -> bytes | None:
     if data.startswith(b"RIFF"):
         return data
     return None
+
+
+def _whisper(audio: bytes, lang: str) -> str:
+    suffix = _suffix(audio)
+    with tempfile.NamedTemporaryFile(suffix=suffix) as handle:
+        handle.write(audio)
+        handle.flush()
+        try:
+            segments, _info = _whisper_model().transcribe(
+                handle.name,
+                language=_whisper_language(lang),
+                beam_size=5,
+                temperature=0.0,
+                condition_on_previous_text=False,
+                vad_filter=False,
+            )
+            return " ".join(segment.text.strip() for segment in segments)
+        except ValueError:
+            raise
+        except Exception as exc:
+            raise ValueError("unreadable recording") from exc
+
+
+def _whisper_model():  # type: ignore[no-untyped-def]
+    global _MODEL
+    if _MODEL is None:
+        from faster_whisper import WhisperModel
+
+        _MODEL = WhisperModel(WHISPER_MODEL, device="cpu", compute_type="int8", cpu_threads=1)
+    return _MODEL
+
+
+def _whisper_language(lang: str) -> str | None:
+    code = lang.lower().split("-", 1)[0]
+    if code in {"ar", "en"}:
+        return code
+    return None
+
+
+def _suffix(audio: bytes) -> str:
+    if audio.startswith(b"RIFF"):
+        return ".wav"
+    if audio.startswith(b"OggS"):
+        return ".ogg"
+    if audio.startswith(b"ID3") or audio[:2] == b"\xff\xfb":
+        return ".mp3"
+    if audio.startswith(b"\x1aE\xdf\xa3"):
+        return ".webm"
+    return ".webm"
 
 
 def _audible(audio: bytes) -> bool:

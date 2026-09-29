@@ -52,7 +52,7 @@ If you later add broker credentials for a rehearsal:
 4. Treat MetaApi as disconnected. A token alone leaves it `SIMULATOR` or `UNAVAILABLE`.
 5. Kill switch flattens the paper book and writes an in-app notification. It does not call a broker.
 
-Voice records from the microphone, transcribes on the server, and plays Mokli's reply as audio. Without a vendor realtime key the local recognizer reads a transcript packed in the recording, or a fixed phrase for other non-silent audio, and the reply is a wav. The turn shows listening, then speaking, then idle. It does not open a paid realtime socket.
+Voice records from the microphone, transcribes on the server with faster-whisper `small`, and plays Mokli's reply as audio. A packed transcript is only a test shortcut. A normal recording is transcribed from the audio, including Arabic. The turn shows listening, then speaking, then idle. It does not open a paid realtime socket.
 
 ## Layout
 

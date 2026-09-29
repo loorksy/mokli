@@ -10,7 +10,7 @@ from mokli.config import Settings
 from mokli.execution.live_gate import execution_book, live_orders_enabled
 from mokli.market.replay import ReplayClock
 from mokli.memory import recall, remember
-from mokli.voice.local import LOCAL_PHRASE, fixture_wav, silent_wav, synthesize, transcribe
+from mokli.voice.local import WHISPER_MODEL, fixture_wav, silent_wav, synthesize, transcribe
 from mokli.voice.session import VoiceSession, VoiceTurn
 
 
@@ -49,7 +49,6 @@ def test_voice_turn_taking_and_barge_in() -> None:
 def test_local_spoken_loop_ends_idle(tmp_path: Path) -> None:
     packed = fixture_wav("ما وضع الذهب")
     assert transcribe(packed) == "ما وضع الذهب"
-    assert transcribe(b"\x1a\x45\xdf\xa3" + b"\x11" * 900) == LOCAL_PHRASE
     with pytest.raises(ValueError):
         transcribe(silent_wav())
     reply = synthesize("الذهب على إعادة تجريبية", "ar")
@@ -77,6 +76,24 @@ def test_local_spoken_loop_ends_idle(tmp_path: Path) -> None:
     ).json()
     assert quiet["state"] == "idle"
     assert quiet["error"] == "silent"
+
+
+def test_two_recordings_are_not_one_fixed_sentence() -> None:
+    assert WHISPER_MODEL == "small"
+    root = Path(__file__).resolve().parent / "fixtures" / "voice"
+    gold = (root / "gold-ar.wav").read_bytes()
+    close = (root / "close-ar.wav").read_bytes()
+    assert b"mokl" not in gold and b"mokl" not in close
+    heard_gold = transcribe(gold, lang="ar")
+    heard_close = transcribe(close, lang="ar")
+    assert heard_gold != heard_close
+    assert heard_gold != "اقرأ الشريط"
+    assert heard_close != "اقرأ الشريط"
+    assert "الذهب" in heard_gold
+    assert "صفقة" in heard_close
+    heard_webm = transcribe((root / "gold-ar.webm").read_bytes(), lang="ar")
+    assert "الذهب" in heard_webm
+    assert heard_webm != heard_close
 
 
 def test_memory_recalls_by_overlap(tmp_path: Path) -> None:
