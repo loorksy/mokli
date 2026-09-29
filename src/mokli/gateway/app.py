@@ -38,6 +38,9 @@ from mokli.news.classify import classify_news_candle
 from mokli.news.machine import news_state
 from mokli.risk.guardrails import execution_recheck
 from mokli.rules_loader import load_rules
+from mokli.runtime.catalog import public_catalog, specs
+from mokli.runtime.persist import outcome_payload
+from mokli.runtime.service import run_selected
 from mokli.schema import (
     AgentEvent,
     AgentRun,
@@ -59,6 +62,7 @@ from mokli.schema import (
     SettingRow,
     Signal,
     SkillState,
+    ToolCall,
     User,
     utcnow,
 )
@@ -249,15 +253,22 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/api/dashboard")
     def dashboard(_user: User = Depends(current_user)) -> dict[str, object]:
         snap = hub.broker.snapshot()
+        provider_id = hub.setting("active_provider", hub.settings.active_provider)
+        spec = specs().get(provider_id, specs()["mokli"])
+        last = _latest_run(hub)
         return {
             "broker": snap,
             "market_state": hub.market_state,
             "mode": hub.live_mode(),
             "live_flag": hub.settings.live_flag,
             "live_confirmed": hub.setting("live_confirmed", "0") == "1",
-            "provider": hub.setting("active_provider", hub.settings.active_provider),
-            "runtime": _runtime_name(hub),
+            "provider": spec.display_provider,
+            "provider_id": provider_id,
+            "runtime": spec.display_runtime,
             "model": _model_name(hub),
+            "agent": "Mokli",
+            "status": last.get("status", "idle"),
+            "tools": last.get("tools", []),
             "killed": hub.broker.killed,
             "freshness": hub.candles[-1].time.isoformat() if hub.candles else None,
             "source": hub.candles[-1].source if hub.candles else hub.market_state,
@@ -319,19 +330,30 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return _run_and_store(hub)
 
     @app.post("/api/chat")
-    def chat(body: ChatBody, _user: User = Depends(current_user)) -> dict[str, object]:
+    async def chat(body: ChatBody, _user: User = Depends(current_user)) -> dict[str, object]:
         hub.allow("chat", 40)
-        language = hub.setting("language", "ar")
         with Session(hub.engine) as session:
             session.add(Message(session_id=body.session_id, role="user", body=body.message))
             session.commit()
-        result = _run_and_store(hub)
-        text = _chat_text(language, result)
+        snapshot = "UNAVAILABLE"
+        if hub.candles:
+            last = hub.candles[-1]
+            snapshot = f"close={last.close} source={last.source}"
+        provider = hub.setting("active_provider", hub.settings.active_provider)
+        outcome = await run_selected(
+            hub.settings,
+            provider,
+            body.message,
+            snapshot,
+            session_id=body.session_id,
+            engine=hub.engine,
+        )
+        payload = outcome_payload(outcome)
         with Session(hub.engine) as session:
-            session.add(Message(session_id=body.session_id, role="mokli", body=text))
+            session.add(Message(session_id=body.session_id, role="mokli", body=str(payload["text"])))
             session.commit()
-        hub.publish("agent_message_completed", {"text": text, "session_id": body.session_id})
-        return {"text": text, "cycle": result}
+        hub.publish("agent_message_completed", {"text": payload["text"], "session_id": body.session_id, "provider": payload["provider"], "runtime": payload["runtime"]})
+        return payload
 
     @app.get("/api/activity")
     def activity(_user: User = Depends(current_user)) -> dict[str, object]:
@@ -511,6 +533,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "mode": hub.live_mode(),
             "timezone": hub.settings.display_timezone,
             "providers": _provider_catalog(hub),
+            "capabilities": _active_capabilities(hub),
         }
 
     @app.put("/api/settings")
@@ -608,16 +631,32 @@ def _model_name(hub: Hub) -> str:
 
 
 def _provider_catalog(hub: Hub) -> list[dict[str, object]]:
-    return [
-        {"id": "mokli", "runtime": "mokli_runtime", "agent_sdk": False, "configured": True},
-        {"id": "openai", "runtime": "openai_agents_sdk", "agent_sdk": True, "configured": bool(hub.settings.openai_api_key)},
-        {"id": "gemini", "runtime": "google_adk", "agent_sdk": True, "configured": bool(hub.settings.gemini_api_key)},
-        {"id": "anthropic", "runtime": "anthropic_messages", "agent_sdk": False, "configured": bool(hub.settings.anthropic_api_key)},
-        {"id": "openrouter", "runtime": "mokli_runtime", "agent_sdk": False, "configured": bool(hub.settings.openrouter_api_key)},
-        {"id": "kimi", "runtime": "mokli_runtime", "agent_sdk": False, "configured": bool(hub.settings.kimi_api_key)},
-        {"id": "zai", "runtime": "zai_agents" if hub.settings.zai_agent_id else "mokli_runtime", "agent_sdk": bool(hub.settings.zai_agent_id), "configured": bool(hub.settings.zai_api_key)},
-        {"id": "ollama", "runtime": "mokli_runtime", "agent_sdk": False, "configured": bool(hub.settings.ollama_model)},
-    ]
+    configured = {
+        "mokli": True,
+        "openai": bool(hub.settings.openai_api_key),
+        "gemini": bool(hub.settings.gemini_api_key),
+        "anthropic": bool(hub.settings.anthropic_api_key),
+        "openrouter": bool(hub.settings.openrouter_api_key),
+        "kimi": bool(hub.settings.kimi_api_key),
+        "zai": bool(hub.settings.zai_api_key),
+        "ollama": bool(hub.settings.ollama_model),
+    }
+    return public_catalog(configured, bool(hub.settings.zai_agent_id))
+
+
+def _active_capabilities(hub: Hub) -> list[str]:
+    provider = hub.setting("active_provider", "mokli")
+    spec = specs().get(provider, specs()["mokli"])
+    return spec.capabilities.enabled()
+
+
+def _latest_run(hub: Hub) -> dict[str, object]:
+    with Session(hub.engine) as session:
+        row = session.exec(select(AgentRun).order_by(col(AgentRun.started_at).desc())).first()
+        if row is None:
+            return {"status": "idle", "tools": []}
+        tools = session.exec(select(ToolCall).where(ToolCall.run_id == row.id)).all()
+        return {"status": row.status, "tools": [item.name for item in tools]}
 
 
 def _skills(hub: Hub) -> list[Skill]:

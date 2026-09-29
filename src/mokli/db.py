@@ -8,6 +8,7 @@ import os
 import secrets
 from pathlib import Path
 
+from sqlalchemy import inspect, text
 from sqlalchemy.engine import Engine
 from sqlmodel import Session, SQLModel, create_engine, select
 
@@ -21,8 +22,38 @@ def create_db_engine(settings: Settings) -> Engine:
     return create_engine(url, connect_args={"check_same_thread": False})
 
 
+_PROVIDER_COLUMNS = {
+    "sdk": "VARCHAR DEFAULT ''",
+    "agent_id": "VARCHAR DEFAULT ''",
+    "parent_agent_id": "VARCHAR DEFAULT ''",
+    "session_id": "VARCHAR DEFAULT ''",
+    "estimated_cost": "FLOAT DEFAULT 0",
+    "tool_calls": "INTEGER DEFAULT 0",
+    "subagents": "INTEGER DEFAULT 0",
+    "retries": "INTEGER DEFAULT 0",
+    "failures": "VARCHAR DEFAULT ''",
+    "fallbacks": "VARCHAR DEFAULT ''",
+    "original_provider": "VARCHAR DEFAULT ''",
+    "original_model": "VARCHAR DEFAULT ''",
+    "original_runtime": "VARCHAR DEFAULT ''",
+    "fallback_provider": "VARCHAR DEFAULT ''",
+    "fallback_model": "VARCHAR DEFAULT ''",
+    "fallback_runtime": "VARCHAR DEFAULT ''",
+    "fallback_reason": "VARCHAR DEFAULT ''",
+    "fallback_at": "DATETIME",
+}
+
+
 def init_database(engine: Engine) -> None:
     SQLModel.metadata.create_all(engine)
+    inspector = inspect(engine)
+    if not inspector.has_table("providerrun"):
+        return
+    present = {column["name"] for column in inspector.get_columns("providerrun")}
+    with engine.begin() as connection:
+        for name, ddl in _PROVIDER_COLUMNS.items():
+            if name not in present:
+                connection.execute(text(f"ALTER TABLE providerrun ADD COLUMN {name} {ddl}"))
 
 
 def hash_passphrase(passphrase: str, salt: bytes | None = None) -> str:

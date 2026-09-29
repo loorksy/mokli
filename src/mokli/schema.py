@@ -71,10 +71,28 @@ class ProviderRun(SQLModel, table=True):
     provider: str
     runtime: str
     model: str
+    sdk: str = ""
+    agent_id: str = ""
+    parent_agent_id: str = ""
+    session_id: str = ""
     input_tokens: int = 0
     output_tokens: int = 0
     cached_tokens: int = 0
+    estimated_cost: float = 0
     latency_ms: int = 0
+    tool_calls: int = 0
+    subagents: int = 0
+    retries: int = 0
+    failures: str = ""
+    fallbacks: str = ""
+    original_provider: str = ""
+    original_model: str = ""
+    original_runtime: str = ""
+    fallback_provider: str = ""
+    fallback_model: str = ""
+    fallback_runtime: str = ""
+    fallback_reason: str = ""
+    fallback_at: datetime | None = None
     fallback_from: str = ""
     error: str = ""
     created_at: datetime = Field(default_factory=utcnow)

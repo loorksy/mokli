@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from agents import Agent, Runner, function_tool, set_tracing_disabled
 from agents.models.interface import Model
+
+from mokli.runtime.openai_agent import run_openai_agent, scripted_tool_model
+from mokli.runtime.toolbridge import ToolBridge, gold_price_tool
 
 
 async def run_with_snapshot_tool(
@@ -11,53 +13,20 @@ async def run_with_snapshot_tool(
     snapshot_text: str,
     *,
     model: Model | str | None = None,
-    instructions: str = "You are Mokli. Call gold_snapshot before you answer. Do not invent prices.",
+    instructions: str = "You are Mokli. Call get_gold_price before you answer. Do not invent prices.",
 ) -> tuple[str, int]:
-    set_tracing_disabled(True)
-    calls = {"count": 0}
-
-    @function_tool
-    def gold_snapshot() -> str:
-        """Return the deterministic XAUUSD snapshot already computed by Mokli."""
-        calls["count"] += 1
-        return snapshot_text
-
-    if model is None:
-        model = _scripted_model()
-    agent = Agent(
-        name="Mokli",
+    bridge = ToolBridge()
+    bridge.register(gold_price_tool(lambda: snapshot_text))
+    outcome = await run_openai_agent(
+        prompt,
+        bridge,
+        model=model if model is not None else scripted_tool_model(),
+        session_id="openai-snapshot",
+        agent_id="openai-snapshot",
         instructions=instructions,
-        tools=[gold_snapshot],
-        model=model,
+        stream=False,
     )
-    result = await Runner.run(agent, prompt)
-    return str(result.final_output), calls["count"]
-
-
-def _scripted_model() -> Model:
-    from agents.testing.model import ScriptedModel
-    from openai.types.responses import (
-        ResponseFunctionToolCall,
-        ResponseOutputMessage,
-        ResponseOutputText,
-    )
-
-    tool_call = ResponseFunctionToolCall(
-        arguments="{}",
-        call_id="call-gold",
-        name="gold_snapshot",
-        type="function_call",
-        id="fc-gold",
-        status="completed",
-    )
-    message = ResponseOutputMessage(
-        id="msg-gold",
-        type="message",
-        role="assistant",
-        status="completed",
-        content=[ResponseOutputText(type="output_text", text="Snapshot read. No trade is proposed by the scripted model.", annotations=[])],
-    )
-    return ScriptedModel([[tool_call], [message]])
+    return outcome.text, outcome.tool_calls
 
 
 def live_model(name: str) -> str:

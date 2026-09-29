@@ -16,11 +16,11 @@ Recorded where the product brief left a choice open. Each item is the option the
 
 7. Live trading is paper unless `MOKLI_LIVE=1` and the settings flag `live_confirmed` are both true. Credentials never flip the mode.
 
-8. With no provider key, the active runtime is the explicit Mokli deterministic runtime. It is not a silent fallback from another vendor.
+8. The default active provider is the explicit Mokli runtime. If a selected vendor runtime fails, Mokli emits `provider_fallback_started`, `provider_fallback_completed`, or `provider_fallback_failed` and stores the original provider, model, runtime, the fallback, the reason, and the time. It does not switch silently.
 
 9. `kimi-sdk` 0.2.1 cannot be installed next to `openai-agents` 0.22.3, because its `kosong` dependency pins `openai<2.15` and `mcp<2`. Kimi calls the native Moonshot HTTP API documented by that SDK (`https://api.moonshot.ai/v1`). Mokli owns the Kimi loop. The hosted agent helpers `generate` and `step` are not imported in-process.
 
-10. Claude Agent SDK (`claude-agent-sdk` 0.2.161) is the official agent runtime. This environment uses the installed Anthropic Python SDK 1.9.0 for the messages API and records agent-SDK availability as false until that package is installed. It is not presented as an OpenAI-compatible adapter.
+10. Claude Agent SDK (`claude-agent-sdk` 0.2.161) is installed and is the Anthropic agent runtime. `query()` executes the turn. `ClaudeSDKClient.interrupt()` is the cancellation path because `query()` cannot interrupt. A live turn starts the Claude Code CLI; offline tests inject the SDK `Transport` and do not call Anthropic. The messages API (`anthropic` 1.9.0) is only the fallback after the Agent SDK fails. Computer use, web search, and shell/file tools are disallowed. Workspace `cwd` is applied by the CLI transport, not by a custom transport.
 
 11. Z.ai `agents.invoke` is the hosted agent API and needs `ZAI_AGENT_ID`. Without that id, chat completions run inside the Mokli loop.
 

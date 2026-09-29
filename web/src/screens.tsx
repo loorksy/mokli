@@ -11,6 +11,9 @@ type Dash = {
   provider: string;
   runtime: string;
   model: string;
+  agent: string;
+  status: string;
+  tools: string[];
   freshness: string | null;
   source: string;
 };
@@ -46,9 +49,12 @@ export function Dashboard() {
           <Card title={t("equity")} value={String(data.broker.equity)} />
           <Card title={t("market")} value={data.market_state} />
           <Card title={t("mode")} value={data.mode === "paper" ? t("paper") : t("live")} />
+          <Card title={t("agent")} value={data.agent} />
           <Card title={t("provider")} value={data.provider} />
-          <Card title={t("runtime")} value={data.runtime} />
           <Card title={t("model")} value={data.model} />
+          <Card title={t("runtime")} value={data.runtime} />
+          <Card title={t("status")} value={data.status} />
+          <Card title={t("tools")} value={data.tools.length ? data.tools.join(", ") : "—"} />
           <Card title={t("freshness")} value={data.freshness ? data.freshness.slice(0, 16).replace("T", " ") : data.source} />
         </div>
       )}
@@ -56,16 +62,38 @@ export function Dashboard() {
   );
 }
 
+type ChatReply = {
+  text: string;
+  provider: string;
+  model: string;
+  runtime: string;
+  agent: string;
+  status: string;
+  tools: string[];
+};
+
 export function Chat() {
   const { t } = useTranslation();
   const [text, setText] = useState("");
-  const [lines, setLines] = useState<{ role: string; body: string }[]>([]);
+  const [lines, setLines] = useState<{ role: string; body: string; meta?: ChatReply }[]>([]);
   return (
     <section className="mx-auto max-w-3xl">
       <div className="mb-3 space-y-2">
         {lines.length === 0 && <p className="text-[var(--muted)]">{t("empty")}</p>}
         {lines.map((line, index) => (
-          <div key={index} className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--card)] p-3 text-sm">{line.body}</div>
+          <div key={index} className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--card)] p-3 text-sm">
+            {line.meta && (
+              <div className="mb-2 text-xs text-[var(--muted)]">
+                <div>{line.meta.agent}</div>
+                <div>{line.meta.provider}</div>
+                <div>{line.meta.model}</div>
+                <div>{line.meta.runtime}</div>
+                <div>● {line.meta.status}</div>
+                <div>{t("tools")}: {line.meta.tools.join(", ") || "—"}</div>
+              </div>
+            )}
+            {line.body}
+          </div>
         ))}
       </div>
       <form className="flex gap-2" onSubmit={async (event) => {
@@ -73,8 +101,8 @@ export function Chat() {
         const message = text;
         setText("");
         setLines((current) => [...current, { role: "user", body: message }]);
-        const reply = await api<{ text: string }>("/api/chat", { method: "POST", body: JSON.stringify({ message }) });
-        setLines((current) => [...current, { role: "mokli", body: reply.text }]);
+        const reply = await api<ChatReply>("/api/chat", { method: "POST", body: JSON.stringify({ message }) });
+        setLines((current) => [...current, { role: "mokli", body: reply.text, meta: reply }]);
       }}>
         <input className="flex-1 rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 py-2" value={text} onChange={(event) => setText(event.target.value)} />
         <button className="rounded-lg bg-[var(--gold)] px-3 py-2 text-black" type="submit">{t("send")}</button>
@@ -221,9 +249,19 @@ export function Reports() { return <JsonView path="/api/reports/daily" />; }
 export function Settings() {
   const { t, i18n } = useTranslation();
   const [live, setLive] = useState(false);
-  useEffect(() => { void api<{ live_confirmed: boolean }>("/api/settings").then((body) => setLive(body.live_confirmed)); }, []);
+  const [capabilities, setCapabilities] = useState<string[]>([]);
+  useEffect(() => {
+    void api<{ live_confirmed: boolean; capabilities: string[] }>("/api/settings").then((body) => {
+      setLive(body.live_confirmed);
+      setCapabilities(body.capabilities);
+    });
+  }, []);
   return (
     <section className="max-w-lg space-y-4">
+      <div className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--card)] p-4 text-sm">
+        <div className="mb-2 text-[var(--muted)]">{t("runtime")}</div>
+        <div>{capabilities.join(" · ") || "—"}</div>
+      </div>
       <label className="block text-sm">{t("language")}</label>
       <select className="rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 py-2" value={i18n.language} onChange={async (event) => {
         const language = event.target.value;

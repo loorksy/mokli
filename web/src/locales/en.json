@@ -37,5 +37,8 @@
   "model": "Model",
   "market": "Market",
   "freshness": "Freshness",
-  "mode": "Mode"
+  "mode": "Mode",
+  "agent": "Agent",
+  "status": "Status",
+  "tools": "Tools"
 }
